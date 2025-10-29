@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-10 col-lg-9">
+    <div class="card">
+      <div class="card-body">
+        <h2 class="card-title mb-3">{{ project.title }}</h2>
+
+        <p class="mb-3"><strong>Synopsis:</strong><br>{{ project.description }}</p>
+
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Type:</strong> {{ project.project_type }}</p>
+            <p><strong>Location:</strong> {{ project.location }}</p>
+            <p><strong>Risk Level:</strong> {{ project.risk_level }}/10</p>
+            <p><strong>Secured:</strong> {{ project.secured }}</p>
+            <p><strong>Duration:</strong> {{ project.duration if project.duration is not none else "—" }} months</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Budget:</strong> ${{ "%.2f"|format(project.budget) }}M</p>
+            <p><strong>Funding Needed:</strong> ${{ "%.2f"|format(project.funding) }}M</p>
+            <p><strong>IRR:</strong> {{ "%.1f"|format(project.irr) }}%</p>
+            {% if project.sponsor_equity is not none %}
+              <p><strong>Sponsor's Equity:</strong> {{ "%.2f"|format(project.sponsor_equity) }}%</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        {% if project.timeline %}<p><strong>Timeline:</strong> {{ project.timeline }}</p>{% endif %}
+        {% if project.exit_strategy %}<p><strong>Exit Strategy:</strong> {{ project.exit_strategy }}</p>{% endif %}
+        {% if project.developer_tr is not none %}<p><strong>Track record (numeric):</strong> {{ project.developer_tr }}</p>{% endif %}
+        {% if project.MOIC_EM is not none %}<p><strong>MOIC/EM:</strong> {{ project.MOIC_EM }}</p>{% endif %}
+        {% if project.preapproved_facility %}<p><strong>Pre-Approved dev facility:</strong> {{ project.preapproved_facility }}</p>{% endif %}
+        {% if project.brand_partnership %}<p><strong>Brand Partnerships:</strong> {{ project.brand_partnership }}</p>{% endif %}
+        {% if project.website %}
+          <p><strong>Website:</strong> <a href="{{ project.website }}" target="_blank" rel="noopener">{{ project.website }}</a></p>
+        {% endif %}
+
+        {% if project.attachment_path %}
+          <a class="btn btn-sm btn-outline-primary"
+             href="{{ url_for('uploaded_file', filename=project.attachment_path) }}"
+             target="_blank">Download Attachment</a>
+        {% endif %}
+
+        <a class="btn btn-secondary mt-2" href="{{ url_for('search') }}">Back to results</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

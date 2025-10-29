@@ -40,8 +40,8 @@ class Project(db.Model):
     
     timeline = db.Column(db.String(200), nullable=True)
     exit_strategy = db.Column(db.String(200), nullable=True)
-    developer_tr = db.Column(db.Integer, default=0, nullable=True)  
-    website = db.Column(db.String(100), nullable=True)
+    developer_tr = db.Column(db.String(200), nullable=True)  
+    website = db.Column(db.String(200), nullable=True)
     preapproved_facility = db.Column(db.String(100), nullable=True)
     brand_partnership = db.Column(db.String(100), nullable=True)
     MOIC_EM = db.Column(db.Float, nullable=True)
