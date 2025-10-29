@@ -31,12 +31,23 @@ class Project(db.Model):
     project_type = db.Column(db.String(50), default='commercial')  # e.g., 'residential', 'commercial'
     budget = db.Column(db.Float, nullable=False)
     funding = db.Column(db.Float, nullable=False)
-    duration = db.Column(db.Integer, nullable=False)
+    duration = db.Column(db.Integer, nullable=True)
     irr = db.Column(db.Float, nullable=False)
     location = db.Column(db.String(100), nullable=False)
     risk_level = db.Column(db.Integer, default=5)  # 1-10 scale
     secured = db.Column(db.String(50), default='mezz')
     attachment_path = db.Column(db.String(300))
+    
+    timeline = db.Column(db.String(200), nullable=True)
+    exit_strategy = db.Column(db.String(200), nullable=True)
+    developer_tr = db.Column(db.Integer, default=0, nullable=True)  
+    website = db.Column(db.String(100), nullable=True)
+    preapproved_facility = db.Column(db.String(100), nullable=True)
+    brand_partnership = db.Column(db.String(100), nullable=True)
+    MOIC_EM = db.Column(db.Float, nullable=True)
+    sponsor_equity = db.Column(db.Float, nullable=False)
+
+    
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # New: Links to user
 
     def __repr__(self):

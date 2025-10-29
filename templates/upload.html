@@ -13,21 +13,35 @@
                     </div>
                     <div class="mb-3">
                         {{ form.description.label(class="form-label") }}
-                        {{ form.description(class="form-control", rows=5) }}
+                        {{ form.description(class="form-control", rows=4) }}
                     </div>
+                    <div class="mb-3">
+                        {{ form.timeline.label(class="form-label") }}
+                        {{ form.timeline(class="form-control", rows=2) }}
+                    </div>    
+                    <div class="mb-3">
+                        {{ form.exit_strategy.label(class="form-label") }}
+                        {{ form.exit_strategy(class="form-control", rows=2) }}
+                    </div>                    
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">{{ form.project_type.label(class="form-label") }} {{ form.project_type(class="form-select") }}</div>
-                            <div class="mb-3">{{ form.budget.label(class="form-label") }} {{ form.budget(class="form-control") }}</div>
-                            <div class="mb-3">{{ form.funding.label(class="form-label") }} {{ form.funding(class="form-control") }}</div>
-                            <div class="mb-3">{{ form.duration.label(class="form-label") }} {{ form.duration(class="form-control") }}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">{{ form.irr.label(class="form-label") }} {{ form.irr(class="form-control") }}</div>
                             <div class="mb-3">{{ form.location.label(class="form-label") }}   {{ form.location(class="form-control") }}</div>
-                            <div class="mb-3">{{ form.risk_level.label(class="form-label") }} {{ form.risk_level(class="form-control") }}</div>
+                            <div class="mb-3">{{ form.developer_tr.label(class="form-label") }} {{ form.developer_tr(class="form-control") }}</div>
+                            <div class="mb-3">{{ form.website.label(class="form-label") }} {{ form.website(class="form-control") }}</div>
+                            <div class="mb-3">{{ form.preapproved_facility.label(class="form-label") }} {{ form.preapproved_facility(class="form-control") }}</div>
+                            <div class="mb-3">{{ form.brand_partnership.label(class="form-label") }} {{ form.brand_partnership(class="form-control") }}</div>
                             <div class="mb-3">{{ form.secured.label(class="form-label") }}    {{ form.secured(class="form-select") }}</div>
                             <div class="mb-3">{{ form.attachment.label(class="form-label") }} {{ form.attachment(class="form-control") }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">{{ form.MOIC_EM.label(class="form-label") }} {{ form.MOIC_EM(class="form-control") }}</div>
+                            <div class="mb-3">{{ form.irr.label(class="form-label") }} {{ form.irr(class="form-control") }}</div>
+                            <div class="mb-3">{{ form.budget.label(class="form-label") }} {{ form.budget(class="form-control") }}</div>                        
+                            <div class="mb-3">{{ form.sponsor_equity.label(class="form-label") }} {{ form.sponsor_equity(class="form-control") }}</div>                            
+                            <div class="mb-3">{{ form.funding.label(class="form-label") }} {{ form.funding(class="form-control") }}</div>
+                            <div class="mb-3">{{ form.duration.label(class="form-label") }} {{ form.duration(class="form-control") }}</div>
+                            <div class="mb-3">{{ form.risk_level.label(class="form-label") }} {{ form.risk_level(class="form-control") }}</div>
                         </div>
                     </div>
                     <div class="d-grid">

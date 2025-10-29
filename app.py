@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from models import db, Project, User
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, TextAreaField, FloatField, IntegerField, SubmitField, PasswordField, SelectField
-from wtforms.validators import DataRequired, Email, EqualTo, NumberRange, Optional
+from wtforms.validators import DataRequired, Email, EqualTo, NumberRange, Optional, URL, Length
 from werkzeug.utils import secure_filename
 import os
 
@@ -53,14 +53,25 @@ class LoginForm(FlaskForm):
     
         
 class ProjectForm(FlaskForm):
-    title = StringField('Project Title', validators=[DataRequired()])
-    description = TextAreaField('Synopsis/Description', validators=[DataRequired()])
+    title = StringField('Project Title', validators=[DataRequired(), Length(max=200)])
+    description = TextAreaField('Project Synopsis/Description', validators=[DataRequired()])
+    timeline = TextAreaField('Project Timeline (Optional)', validators=[Optional()])
+    exit_strategy = TextAreaField('Project Exit Strategy (Optional)', validators=[Optional()])
+
+
+    developer_tr = TextAreaField('Developer Track Record (Yrs)', validators=[Optional()])
+    website = TextAreaField('Developer Website (Optional)', validators=[Optional()])
+    preapproved_facility = TextAreaField('Preapproved Facility (Optional)', validators=[Optional()])
+    brand_partnership = TextAreaField('Brand Partnership (Optional)', validators=[Optional()])
+    MOIC_EM = TextAreaField('MOIC/EM (Optional)', validators=[Optional()])
+    sponsor_equity = FloatField("Sponsor's Equity (%)", validators=[DataRequired(), NumberRange(min=0, max=100)])
+    # sponsor_equity = TextAreaField('Sponsor Equity', validators=[Optional(), NumberRange(min=0, max=100, message="Use 0–100")])
     project_type = SelectField('Project Type', choices=[('Residential', 'Residential'), ('commercial', 'Commercial'), ('industrial', 'Industrial')], default='commercial', validators=[DataRequired()])
     budget = FloatField('Budget (USD Millions)', validators=[DataRequired()])
-    funding = FloatField('Funding Required (USD Millions)', validators=[DataRequired()])
+    funding = FloatField('Funding Required (USD Millions)', validators=[Optional()])
     duration = IntegerField('Funding Duration (Months)', validators=[DataRequired()])
-    irr = FloatField('Expected IRR', validators=[DataRequired()])
-    location = StringField('Location', validators=[DataRequired()])
+    irr = FloatField('Expected IRR', validators=[Optional(), NumberRange(min=0, max=100, message="Use 0–100")])
+    location = StringField('Location', validators=[Optional()])
     risk_level = IntegerField('Risk Level (1-10)', validators=[DataRequired(), NumberRange(min=1, max=10)])
     secured = SelectField('Funding Waterfall', choices=['Equity', 'Mezz','Senior','Negotiable (TBD)'], default='Mezz', validators=[DataRequired()])                                                        
     attachment = FileField('Upload Attachment (PDF, XLSX, etc.)', validators=[
@@ -118,6 +129,14 @@ def upload():
         project = Project(
             title=form.title.data,
             description=form.description.data,
+            timeline=form.timeline.data,
+            exit_strategy=form.exit_strategy.data,
+            developer_tr=form.developer_tr.data,            
+            website=form.website.data,            
+            preapproved_facility=form.preapproved_facility.data,            
+            brand_partnership=form.brand_partnership.data,
+            MOIC_EM=form.MOIC_EM.data,
+            sponsor_equity=form.sponsor_equity.data,
             project_type=form.project_type.data,
             budget=form.budget.data,
             funding=form.funding.data,  # Add this
@@ -179,6 +198,12 @@ def upload():
 #     return render_template('upload.html', form=form)
 
 
+@app.route("/projects/<int:project_id>")
+@login_required
+def project_detail(project_id):
+    project = Project.query.get_or_404(project_id)
+    # (Optional) if you want only certain roles to view details, enforce here.
+    return render_template("project_detail.html", project=project)
 
 
 @app.route('/uploads/<filename>')
