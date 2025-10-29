@@ -107,38 +107,6 @@ def logout():
     flash('Logged out successfully!')
     return redirect(url_for('index'))
 
-# @app.route('/upload', methods=['GET', 'POST'])
-# @login_required
-# def upload():
-#     if current_user.role != 'developer':
-#         flash('Only developers can upload projects!')
-#         return redirect(url_for('search'))
-#     form = ProjectForm()
-#     if form.validate_on_submit():
-#         project = Project(
-#             title=form.title.data,
-#             description=form.description.data,
-#             project_type=form.project_type.data,
-#             budget=form.budget.data,
-#             funding=form.funding.data,  # Add this
-#             irr=form.irr.data,          # Add this
-#             duration=form.duration.data,
-#             location=form.location.data,
-#             risk_level=form.risk_level.data,
-#             user_id=current_user.id
-#         )
-#         if form.attachment.data and allowed_file(form.attachment.data.filename):
-#             filename = secure_filename(form.attachment.data.filename)
-#             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-#             form.attachment.data.save(filepath)
-#             project.attachment_path = filename
-#         db.session.add(project)
-#         db.session.commit()
-#         flash('Project uploaded successfully!')
-#         return redirect(url_for('search'))
-#     return render_template('upload.html', form=form)
-
-
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
@@ -147,35 +115,68 @@ def upload():
         return redirect(url_for('search'))
     form = ProjectForm()
     if form.validate_on_submit():
-        print(f"[DEBUG] Form valid! Title: {form.title.data}, User ID: {current_user.id}")  # Add this
         project = Project(
             title=form.title.data,
             description=form.description.data,
             project_type=form.project_type.data,
             budget=form.budget.data,
-            funding=form.funding.data,
-            irr=form.irr.data,
+            funding=form.funding.data,  # Add this
+            irr=form.irr.data,          # Add this
             duration=form.duration.data,
             location=form.location.data,
             risk_level=form.risk_level.data,
             secured=form.secured.data,
             user_id=current_user.id
         )
-        print(f"[DEBUG] Project object created: ID temp={project.id}")  # Add this (ID is None pre-commit)
         if form.attachment.data and allowed_file(form.attachment.data.filename):
             filename = secure_filename(form.attachment.data.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             form.attachment.data.save(filepath)
             project.attachment_path = filename
-            print(f"[DEBUG] File saved: {filename}")  # Add this
         db.session.add(project)
         db.session.commit()
-        print(f"[DEBUG] Committed! New project ID: {project.id}")  # Add this—key check!
         flash('Project uploaded successfully!')
         return redirect(url_for('search'))
-    else:
-        print(f"[DEBUG] Form errors: {form.errors}")  # Add this for validation fails
     return render_template('upload.html', form=form)
+
+
+# @app.route('/upload', methods=['GET', 'POST'])
+# @login_required
+# def upload():
+#     if current_user.role != 'developer':
+#         flash('Only developers can upload/modify projects!')
+#         return redirect(url_for('search'))
+#     form = ProjectForm()
+#     if form.validate_on_submit():
+#         print(f"[DEBUG] Form valid! Title: {form.title.data}, User ID: {current_user.id}")  # Add this
+#         project = Project(
+#             title=form.title.data,
+#             description=form.description.data,
+#             project_type=form.project_type.data,
+#             budget=form.budget.data,
+#             funding=form.funding.data,
+#             irr=form.irr.data,
+#             duration=form.duration.data,
+#             location=form.location.data,
+#             risk_level=form.risk_level.data,
+#             secured=form.secured.data,
+#             user_id=current_user.id
+#         )
+#         print(f"[DEBUG] Project object created: ID temp={project.id}")  # Add this (ID is None pre-commit)
+#         if form.attachment.data and allowed_file(form.attachment.data.filename):
+#             filename = secure_filename(form.attachment.data.filename)
+#             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+#             form.attachment.data.save(filepath)
+#             project.attachment_path = filename
+#             print(f"[DEBUG] File saved: {filename}")  # Add this
+#         db.session.add(project)
+#         db.session.commit()
+#         print(f"[DEBUG] Committed! New project ID: {project.id}")  # Add this—key check!
+#         flash('Project uploaded successfully!')
+#         return redirect(url_for('search'))
+#     else:
+#         print(f"[DEBUG] Form errors: {form.errors}")  # Add this for validation fails
+#     return render_template('upload.html', form=form)
 
 
 
