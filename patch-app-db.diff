@@ -1,0 +1,30 @@
+--- a/app.py
++++ b/app.py
+@@ -1,6 +1,23 @@
+ import os
+-from flask import Flask
+-from models import db
++from flask import Flask
++from models import db
+
+ app = Flask(__name__, instance_relative_config=True)
+
++# If you use local SQLite for dev, keep your existing config here (example):
++# os.makedirs(app.instance_path, exist_ok=True)
++# app.config.from_mapping(
++#     SECRET_KEY=os.environ.get('SECRET_KEY', 'dev-secret'),
++#     SQLALCHEMY_DATABASE_URI='sqlite:///' + os.path.join(app.instance_path, 'projects.db'),
++#     SQLALCHEMY_TRACK_MODIFICATIONS=False,
++# )
++
++# Use DATABASE_URL (Render Postgres) when present
++database_url = os.environ.get("DATABASE_URL")
++if database_url:
++    database_url = database_url.replace("postgres://", "postgresql://", 1)
++    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
++
++# db.init_app(app)
++# (Optional) create tables automatically in small prototypes:
++# @app.before_request
++# def _create_tables_if_needed():
++#     db.create_all()

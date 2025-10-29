@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">Upload Project Synopsis</h2>
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", rows=5) }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">{{ form.project_type.label(class="form-label") }} {{ form.project_type(class="form-select") }}</div>
+                            <div class="mb-3">{{ form.budget.label(class="form-label") }} {{ form.budget(class="form-control") }}</div>
+                            <div class="mb-3">{{ form.funding.label(class="form-label") }} {{ form.funding(class="form-control") }}</div>
+                            <div class="mb-3">{{ form.duration.label(class="form-label") }} {{ form.duration(class="form-control") }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">{{ form.irr.label(class="form-label") }} {{ form.irr(class="form-control") }}</div>
+                            <div class="mb-3">{{ form.location.label(class="form-label") }} {{ form.location(class="form-control") }}</div>
+                            <div class="mb-3">{{ form.risk_level.label(class="form-label") }} {{ form.risk_level(class="form-control") }}</div>
+                            <div class="mb-3">{{ form.secured.label(class="form-label") }} {{ form.secured(class="form-control") }}</div>
+                            <div class="mb-3">{{ form.attachment.label(class="form-label") }} {{ form.attachment(class="form-control") }}</div>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-success") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

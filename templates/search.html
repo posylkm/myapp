@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <h2 class="card-title">Search Projects</h2>
+        <form method="POST" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="query" class="form-control" placeholder="Search by title, description, or location" value="{{ query }}">
+                <button type="submit" class="btn btn-outline-secondary">Search</button>
+            </div>
+        </form>
+        <h3>Results ({{ projects|length }} found):</h3>
+        {% if projects %}
+            <div class="list-group">
+                {% for project in projects %}
+                    <div class="list-group-item">
+                        <h5 class="mb-1">{{ project.title }}</h5>
+                        <p class="mb-1">Type: {{ project.project_type }} | Risk: {{ project.risk_level }}/10</p>
+                        <p class="mb-1">Budget: ${{ "%.2f"|format(project.budget) }}M | Funding Needed: ${{ "%.2f"|format(project.funding) }}M | IRR: {{ "%.1f"|format(project.irr) }}% | Duration: {{ project.duration }} months</p>
+                        <p class="mb-1">Location: {{ project.location }}</p>
+                        <p class="mb-1">Secured: {{ project.secured }}</p>
+                        <p class="mb-2">Synopsis: {{ project.description[:200] }}...</p>
+                        <small class="text-muted">ID: {{ project.id }}</small>
+                        {% if project.attachment_path %}
+                            <a href="{{ url_for('uploaded_file', filename=project.attachment_path) }}" class="btn btn-sm btn-outline-primary" target="_blank">Download Attachment</a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">No projects found. <a href="{{ url_for('upload') }}">Upload one?</a></p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
