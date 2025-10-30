@@ -15,3 +15,10 @@ with app.app_context():
     print(f"Total projects: {len(all_projects)}")
     for proj in all_projects:
         print(f"ID: {proj.id}, Title: {proj.title}, Description: {proj.description[:50]}..., Location: {proj.location}")
+
+
+
+# PUSH TO GIT
+# !git add .
+# !git commit -m "minor cleanups"
+# !git push

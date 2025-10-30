@@ -1,41 +1,121 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-10 col-lg-9">
+  <div class="col-md-8">
     <div class="card">
       <div class="card-body">
-        <h2 class="card-title mb-3">{{ project.title }}</h2>
+        <h2 class="card-title">{% if current_user.is_authenticated and (current_user.role == 'admin' or current_user.id == project.user_id) %}Project Details{% else %}Project{% endif %}</h2>
 
-        <p class="mb-3"><strong>Synopsis:</strong><br>{{ project.description }}</p>
+        <!-- Title -->
+        <div class="mb-3">
+          <label class="form-label">Title</label>
+          <div class="form-control-plaintext">{{ project.title }}</div>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <div class="form-control-plaintext">{{ project.description }}</div>
+        </div>
 
         <div class="row">
           <div class="col-md-6">
-            <p><strong>Type:</strong> {{ project.project_type }}</p>
-            <p><strong>Location:</strong> {{ project.location }}</p>
-            <p><strong>Risk Level:</strong> {{ project.risk_level }}/10</p>
-            <p><strong>Secured:</strong> {{ project.secured }}</p>
-            <p><strong>Duration:</strong> {{ project.duration if project.duration is not none else "—" }} months</p>
+            <div class="mb-3">
+              <label class="form-label">Project Type</label>
+              <div class="form-control-plaintext">{{ project.project_type }}</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Budget</label>
+              <div class="form-control-plaintext">${{ "%.2f"|format(project.budget) }}M</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Funding Needed</label>
+              <div class="form-control-plaintext">${{ "%.2f"|format(project.funding) }}M</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Duration (months)</label>
+              <div class="form-control-plaintext">{{ project.duration if project.duration is not none else "—" }}</div>
+            </div>
           </div>
+
           <div class="col-md-6">
-            <p><strong>Budget:</strong> ${{ "%.2f"|format(project.budget) }}M</p>
-            <p><strong>Funding Needed:</strong> ${{ "%.2f"|format(project.funding) }}M</p>
-            <p><strong>IRR:</strong> {{ "%.1f"|format(project.irr) }}%</p>
-            {% if project.sponsor_equity is not none %}
-              <p><strong>Sponsor's Equity:</strong> {{ "%.2f"|format(project.sponsor_equity) }}%</p>
-            {% endif %}
+            <div class="mb-3">
+              <label class="form-label">IRR (%)</label>
+              <div class="form-control-plaintext">{{ "%.1f"|format(project.irr) }}%</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Location</label>
+              <div class="form-control-plaintext">{{ project.location }}</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Risk Level</label>
+              <div class="form-control-plaintext">{{ project.risk_level }}/10</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Secured</label>
+              <div class="form-control-plaintext">{{ project.secured }}</div>
+            </div>
           </div>
         </div>
 
         <hr class="my-3">
 
-        {% if project.timeline %}<p><strong>Timeline:</strong> {{ project.timeline }}</p>{% endif %}
-        {% if project.exit_strategy %}<p><strong>Exit Strategy:</strong> {{ project.exit_strategy }}</p>{% endif %}
-        {% if project.developer_tr is not none %}<p><strong>Track record (numeric):</strong> {{ project.developer_tr }}</p>{% endif %}
-        {% if project.MOIC_EM is not none %}<p><strong>MOIC/EM:</strong> {{ project.MOIC_EM }}</p>{% endif %}
-        {% if project.preapproved_facility %}<p><strong>Pre-Approved dev facility:</strong> {{ project.preapproved_facility }}</p>{% endif %}
-        {% if project.brand_partnership %}<p><strong>Brand Partnerships:</strong> {{ project.brand_partnership }}</p>{% endif %}
+        {% if project.timeline %}
+          <div class="mb-3">
+            <label class="form-label">Timeline</label>
+            <div class="form-control-plaintext">{{ project.timeline }}</div>
+          </div>
+        {% endif %}
+
+        {% if project.exit_strategy %}
+          <div class="mb-3">
+            <label class="form-label">Exit Strategy</label>
+            <div class="form-control-plaintext">{{ project.exit_strategy }}</div>
+          </div>
+        {% endif %}
+
+        {% if project.developer_tr is not none %}
+          <div class="mb-3">
+            <label class="form-label">Track record (numeric)</label>
+            <div class="form-control-plaintext">{{ project.developer_tr }}</div>
+          </div>
+        {% endif %}
+
+        {% if project.MOIC_EM is not none %}
+          <div class="mb-3">
+            <label class="form-label">MOIC/EM</label>
+            <div class="form-control-plaintext">{{ project.MOIC_EM }}</div>
+          </div>
+        {% endif %}
+
+        {% if project.preapproved_facility %}
+          <div class="mb-3">
+            <label class="form-label">Pre-Approved dev facility</label>
+            <div class="form-control-plaintext">{{ project.preapproved_facility }}</div>
+          </div>
+        {% endif %}
+
+        {% if project.brand_partnership %}
+          <div class="mb-3">
+            <label class="form-label">Brand Partnerships</label>
+            <div class="form-control-plaintext">{{ project.brand_partnership }}</div>
+          </div>
+        {% endif %}
+
+        {% if project.sponsor_equity is not none %}
+          <div class="mb-3">
+            <label class="form-label">Sponsor's Equity (%)</label>
+            <div class="form-control-plaintext">{{ "%.2f"|format(project.sponsor_equity) }}%</div>
+          </div>
+        {% endif %}
+
         {% if project.website %}
-          <p><strong>Website:</strong> <a href="{{ project.website }}" target="_blank" rel="noopener">{{ project.website }}</a></p>
+          <div class="mb-3">
+            <label class="form-label">Website</label>
+            <div class="form-control-plaintext">
+              <a href="{{ project.website }}" target="_blank" rel="noopener">{{ project.website }}</a>
+            </div>
+          </div>
         {% endif %}
 
         {% if project.attachment_path %}
@@ -44,7 +124,14 @@
              target="_blank">Download Attachment</a>
         {% endif %}
 
-        <a class="btn btn-secondary mt-2" href="{{ url_for('search') }}">Back to results</a>
+        <div class="mt-3 d-flex gap-2">
+          {% if current_user.is_authenticated and (current_user.role == 'admin' or current_user.id == project.user_id) %}
+            <a href="{{ url_for('edit_project', project_id=project.id) }}"
+               class="btn btn-sm btn-outline-secondary">Edit</a>
+          {% endif %}
+          <a href="{{ url_for('search') }}" class="btn btn-sm btn-secondary">Back to results</a>
+        </div>
+
       </div>
     </div>
   </div>

@@ -10,7 +10,14 @@ class User(UserMixin, db.Model):  # UserMixin adds login features
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(150), nullable=False)
-    role = db.Column(db.String(20), default='investor')  # 'developer' or 'investor'
+    role = db.Column(db.String(20), default='developer')  # 'developer' or 'investor'
+    company_name = db.Column(db.String(150), nullable=True)
+    company_website = db.Column(db.String(255), nullable=True)
+    company_address = db.Column(db.String(300), nullable=True)
+    phone = db.Column(db.String(30), nullable=True)
+    first_name = db.Column(db.String(100), nullable=True)
+    surname = db.Column(db.String(100), nullable=True)
+    aum = db.Column(db.Float, nullable=True)  # in millions or your preferred unit
 
     # Projects relationship (one user has many projects)
     projects = db.relationship('Project', backref='owner', lazy=True)
