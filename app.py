@@ -8,6 +8,7 @@ from wtforms.validators import DataRequired, Email, EqualTo, NumberRange, Option
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import or_
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 import os
@@ -24,17 +25,19 @@ def can_edit_project(project, user):
 
 app = Flask(__name__, instance_relative_config=True)
 
+
 database_url = os.environ.get("DATABASE_URL")
 if database_url:
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-# else: keep your local SQLite config as-is
+    # Render-style URLs may start with postgres://
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url.replace("postgres://", "postgresql://", 1)
+else:
+    app.config.from_mapping(
+        SECRET_KEY='your-secret-key-change-this',
+        DATABASE=os.path.join(app.instance_path, 'projects.db'),
+    )
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{app.config["DATABASE"]}'
 
-app.config.from_mapping(
-    SECRET_KEY='your-secret-key-change-this',
-    DATABASE=os.path.join(app.instance_path, 'projects.db'),
-)
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{app.config["DATABASE"]}'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
@@ -106,8 +109,10 @@ class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
-    
-        
+
+# helper to convert "" to None for optional numeric fields    
+_blank_none = [lambda v: (v if v not in ("", None) else None)]  
+      
 class ProjectForm(FlaskForm):
     title = StringField('Project Title', validators=[DataRequired(), Length(max=200)])
     description = TextAreaField('Project Synopsis/Description', validators=[DataRequired()])
@@ -115,13 +120,12 @@ class ProjectForm(FlaskForm):
     exit_strategy = TextAreaField('Project Exit Strategy (Optional)', validators=[Optional()])
 
 
-    developer_tr = TextAreaField('Developer Track Record (Yrs)', validators=[Optional()])
-    website = TextAreaField('Developer Website (Optional)', validators=[Optional()])
-    preapproved_facility = TextAreaField('Preapproved Facility (Optional)', validators=[Optional()])
-    brand_partnership = TextAreaField('Brand Partnership (Optional)', validators=[Optional()])
-    MOIC_EM = TextAreaField('MOIC/EM (Optional)', validators=[Optional()])
+    developer_tr = StringField('Developer Track Record (Yrs)', validators=[Optional()])
+    website = StringField('Developer Website (Optional)', validators=[Optional()])
+    preapproved_facility = StringField('Preapproved Facility (Optional)', validators=[Optional()])
+    brand_partnership = StringField('Brand Partnership (Optional)', validators=[Optional()])
+    MOIC_EM = StringField('MOIC/EM (Optional)', validators=[Optional()])
     sponsor_equity = FloatField("Sponsor's Equity (%)", validators=[DataRequired(), NumberRange(min=0, max=100)])
-    # sponsor_equity = TextAreaField('Sponsor Equity', validators=[Optional(), NumberRange(min=0, max=100, message="Use 0–100")])
     project_type = SelectField('Project Type', choices=[('Residential', 'Residential'), ('commercial', 'Commercial'), ('industrial', 'Industrial')], default='commercial', validators=[DataRequired()])
     budget = FloatField('Budget (USD Millions)', validators=[DataRequired()])
     funding = FloatField('Funding Required (USD Millions)', validators=[Optional()])
@@ -220,13 +224,17 @@ def upload():
         return redirect(url_for('search'))
     form = ProjectForm()
     if form.validate_on_submit():
+        website_value = form.website.data.strip() if form.website.data else None
+        if website_value and not website_value.startswith(("http://", "https://")):
+            website_value = "https://" + website_value
+
         project = Project(
             title=form.title.data,
             description=form.description.data,
             timeline=form.timeline.data,
             exit_strategy=form.exit_strategy.data,
             developer_tr=form.developer_tr.data,            
-            website=form.website.data,            
+            website=website_value,            
             preapproved_facility=form.preapproved_facility.data,            
             brand_partnership=form.brand_partnership.data,
             MOIC_EM=form.MOIC_EM.data,
@@ -303,8 +311,6 @@ def edit_project(project_id):
 
     # 👇 Reuse upload.html; just tell it we’re in edit mode
     return render_template("upload.html", form=form, edit_mode=True, project=project)
-
-
 
 
 
