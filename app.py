@@ -151,6 +151,10 @@ def about():
 def contact():
     return render_template('contact.html')
 
+@app.route('/faq')
+def faq():
+    return render_template('faq.html')
+
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
