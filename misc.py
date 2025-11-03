@@ -20,5 +20,5 @@ with app.app_context():
 
 # PUSH TO GIT
 # !git add .
-# !git commit -m "added ABOUT/CONTACT/FAQ pages"
+# !git commit -m "minor format improvements pages"
 # !git push
