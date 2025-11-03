@@ -327,12 +327,20 @@ def edit_project(project_id):
 
 
 
+# @app.route("/projects/<int:project_id>")
+# @login_required
+# def project_detail(project_id):
+#     project = Project.query.get_or_404(project_id)
+#     # (Optional) if you want only certain roles to view details, enforce here.
+#     return render_template("project_detail.html", project=project)
+
 @app.route("/projects/<int:project_id>")
 @login_required
 def project_detail(project_id):
     project = Project.query.get_or_404(project_id)
-    # (Optional) if you want only certain roles to view details, enforce here.
-    return render_template("project_detail.html", project=project)
+    form = ProjectForm(obj=project)  # prefill with existing values
+    return render_template("upload.html", form=form, project=project, view_mode=True)
+
 
 
 @app.route('/uploads/<filename>')

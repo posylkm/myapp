@@ -5,60 +5,178 @@
     <div class="card">
       <div class="card-body">
         <h2 class="card-title">
-          {% if edit_mode %}Edit Project{% else %}Upload Project Synopsis{% endif %}
+          {% if view_mode %}
+            Project Details
+          {% elif edit_mode %}
+            Edit Project
+          {% else %}
+            Upload Project Synopsis
+          {% endif %}
         </h2>
 
-        <form method="POST" enctype="multipart/form-data">
-                
-                    {{ form.hidden_tag() }}
-                    <div class="mb-3">
-                        {{ form.title.label(class="form-label") }}
-                        {{ form.title(class="form-control") }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.description.label(class="form-label") }}
-                        {{ form.description(class="form-control", rows=4) }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.timeline.label(class="form-label") }}
-                        {{ form.timeline(class="form-control", rows=2) }}
-                    </div>    
-                    <div class="mb-3">
-                        {{ form.exit_strategy.label(class="form-label") }}
-                        {{ form.exit_strategy(class="form-control", rows=2) }}
-                    </div>                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">{{ form.project_type.label(class="form-label") }} {{ form.project_type(class="form-select") }}</div>
-                            <div class="mb-3">{{ form.location.label(class="form-label") }}   {{ form.location(class="form-control") }}</div>
-                            <div class="mb-3">{{ form.developer_tr.label(class="form-label") }} {{ form.developer_tr(class="form-control") }}</div>
-                            <div class="mb-3">{{ form.website.label(class="form-label") }} {{ form.website(class="form-control") }}</div>
-                            <div class="mb-3">{{ form.preapproved_facility.label(class="form-label") }} {{ form.preapproved_facility(class="form-control") }}</div>
-                            <div class="mb-3">{{ form.brand_partnership.label(class="form-label") }} {{ form.brand_partnership(class="form-control") }}</div>
-                            <div class="mb-3">{{ form.secured.label(class="form-label") }}    {{ form.secured(class="form-select") }}</div>
-                            <div class="mb-3">{{ form.attachment.label(class="form-label") }} {{ form.attachment(class="form-control") }}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">{{ form.MOIC_EM.label(class="form-label") }} {{ form.MOIC_EM(class="form-control") }}</div>
-                            <div class="mb-3">{{ form.irr.label(class="form-label") }} {{ form.irr(class="form-control") }}</div>
-                            <div class="mb-3">{{ form.budget.label(class="form-label") }} {{ form.budget(class="form-control") }}</div>                        
-                            <div class="mb-3">{{ form.sponsor_equity.label(class="form-label") }} {{ form.sponsor_equity(class="form-control") }}</div>                            
-                            <div class="mb-3">{{ form.funding.label(class="form-label") }} {{ form.funding(class="form-control") }}</div>
-                            <div class="mb-3">{{ form.duration.label(class="form-label") }} {{ form.duration(class="form-control") }}</div>
-                            <div class="mb-3">{{ form.risk_level.label(class="form-label") }} {{ form.risk_level(class="form-control") }}</div>
-                        </div>
-                    </div>
-          <div class="d-grid">
+        {% if not view_mode %}
+          <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+        {% endif %}
+
+        <div class="mb-3">
+          {{ form.title.label(class="form-label") }}
+          {% if view_mode %}
+            <div class="form-control-plaintext">{{ project.title }}</div>
+          {% else %}
+            {{ form.title(class="form-control") }}
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.description.label(class="form-label") }}
+          {% if view_mode %}
+            <div class="form-control-plaintext">{{ project.description }}</div>
+          {% else %}
+            {{ form.description(class="form-control", rows=4) }}
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.timeline.label(class="form-label") }}
+          {% if view_mode %}
+            <div class="form-control-plaintext">{{ project.timeline or '—' }}</div>
+          {% else %}
+            {{ form.timeline(class="form-control", rows=2) }}
+          {% endif %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.exit_strategy.label(class="form-label") }}
+          {% if view_mode %}
+            <div class="form-control-plaintext">{{ project.exit_strategy or '—' }}</div>
+          {% else %}
+            {{ form.exit_strategy(class="form-control", rows=2) }}
+          {% endif %}
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              {{ form.project_type.label(class="form-label") }}
+              {% if view_mode %}
+                <div class="form-control-plaintext">{{ project.project_type }}</div>
+              {% else %}
+                {{ form.project_type(class="form-select") }}
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.location.label(class="form-label") }}
+              {% if view_mode %}
+                <div class="form-control-plaintext">{{ project.location }}</div>
+              {% else %}
+                {{ form.location(class="form-control") }}
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.developer_tr.label(class="form-label") }}
+              {% if view_mode %}
+                <div class="form-control-plaintext">{{ project.developer_tr or '—' }}</div>
+              {% else %}
+                {{ form.developer_tr(class="form-control") }}
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.website.label(class="form-label") }}
+              {% if view_mode %}
+                {% if project.website %}
+                  <a href="{{ project.website }}" target="_blank">{{ project.website }}</a>
+                {% else %}
+                  <div class="form-control-plaintext">—</div>
+                {% endif %}
+              {% else %}
+                {{ form.website(class="form-control") }}
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.preapproved_facility.label(class="form-label") }}
+              {% if view_mode %}
+                <div class="form-control-plaintext">{{ project.preapproved_facility or '—' }}</div>
+              {% else %}
+                {{ form.preapproved_facility(class="form-control") }}
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.brand_partnership.label(class="form-label") }}
+              {% if view_mode %}
+                <div class="form-control-plaintext">{{ project.brand_partnership or '—' }}</div>
+              {% else %}
+                {{ form.brand_partnership(class="form-control") }}
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.secured.label(class="form-label") }}
+              {% if view_mode %}
+                <div class="form-control-plaintext">{{ project.secured }}</div>
+              {% else %}
+                {{ form.secured(class="form-select") }}
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.attachment.label(class="form-label") }}
+              {% if view_mode %}
+                {% if project.attachment_path %}
+                  <a href="{{ url_for('uploaded_file', filename=project.attachment_path) }}" class="btn btn-sm btn-outline-primary" target="_blank">Download Attachment</a>
+                {% else %}
+                  <div class="form-control-plaintext">—</div>
+                {% endif %}
+              {% else %}
+                {{ form.attachment(class="form-control") }}
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            {% for field in [form.MOIC_EM, form.irr, form.budget, form.sponsor_equity, form.funding, form.duration, form.risk_level] %}
+              <div class="mb-3">
+                {{ field.label(class="form-label") }}
+                {% if view_mode %}
+                  <div class="form-control-plaintext">
+                    {{ project[field.name] if project[field.name] is defined else '—' }}
+                  </div>
+                {% else %}
+                  {{ field(class="form-control") }}
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        {% if view_mode %}
+          <div class="d-flex justify-content-center gap-3 mt-4">
+            {% if current_user.is_authenticated and (current_user.role == 'admin' or current_user.id == project.user_id) %}
+              <a href="{{ url_for('edit_project', project_id=project.id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-pencil"></i> Edit
+              </a>
+            {% endif %}
+            <a href="{{ url_for('search') }}" class="btn btn-secondary">
+              <i class="bi bi-arrow-left"></i> Back
+            </a>
+            <button type="button" class="btn btn-outline-primary" onclick="window.print()">
+              <i class="bi bi-printer"></i> Print
+            </button>
+          </div>
+        {% else %}
+          <div class="d-grid mt-3">
             {% if edit_mode %}
               {{ form.submit(class="btn btn-primary", value="Save changes") }}
             {% else %}
               {{ form.submit(class="btn btn-success", value="Create project") }}
             {% endif %}
           </div>
-        </form>
-
-        {% if edit_mode %}
-          <a href="{{ url_for('project_detail', project_id=project.id) }}" class="btn btn-link mt-2">Back to details</a>
+          </form>
         {% endif %}
       </div>
     </div>
