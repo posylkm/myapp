@@ -23,25 +23,23 @@ def can_edit_project(project, user):
     return getattr(user, "role", None) == "developer" and project.user_id == user.id
 
 
-app = Flask(__name__, instance_relative_config=True)
 
+app = Flask(__name__, instance_relative_config=True)
 
 database_url = os.environ.get("DATABASE_URL")
 if database_url:
-    # Render-style URLs may start with postgres://
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url.replace("postgres://", "postgresql://", 1)
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
 else:
     app.config.from_mapping(
-        SECRET_KEY='your-secret-key-change-this',
+        SECRET_KEY='dev-secret-change-me',
         DATABASE=os.path.join(app.instance_path, 'projects.db'),
     )
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{app.config["DATABASE"]}'
 
-
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 db.init_app(app)
@@ -72,6 +70,7 @@ admin.add_view(SecureModelView(Project, db.session))
 #     can_delete = False
 
 # admin.add_view(ReadOnlyModelView(Project, db.session))
+
 
 
 @login_manager.user_loader
@@ -140,9 +139,17 @@ class ProjectForm(FlaskForm):
     submit = SubmitField('Upload Project')
 
 # Routes
-@app.route('/')
-def index():
-    return render_template('base.html')
+# @app.route('/')
+# def index():
+#     return render_template('base.html')
+
+
+@app.route("/")
+def home():
+    return render_template("home.html")
+
+
+
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -197,6 +204,8 @@ def register():
     return render_template("register.html", form=form)
 
 
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -205,7 +214,7 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user)
             flash('Login successful!')
-            return redirect(url_for('index'))
+            return redirect(url_for('home'))
         flash('Invalid email or password!')
     return render_template('login.html', form=form)
 
@@ -214,7 +223,7 @@ def login():
 def logout():
     logout_user()
     flash('Logged out successfully!')
-    return redirect(url_for('index'))
+    return redirect(url_for('home'))
 
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -329,8 +338,16 @@ def uploaded_file(filename):
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     query = request.form.get('query', '') if request.method == 'POST' else ''
+    # projects = Project.query.all() if not query else Project.query.filter(
+    #     Project.title.contains(query) | Project.description.contains(query) | Project.location.contains(query)
+    # ).all()
+    query = request.form.get('query', '') if request.method == 'POST' else ''
     projects = Project.query.all() if not query else Project.query.filter(
-        Project.title.contains(query) | Project.description.contains(query) | Project.location.contains(query)
+        or_(
+            Project.title.ilike(f"%{query}%"),
+            Project.description.ilike(f"%{query}%"),
+            Project.location.ilike(f"%{query}%")
+        )
     ).all()
     return render_template('search.html', projects=projects, query=query)
 

@@ -20,5 +20,5 @@ with app.app_context():
 
 # PUSH TO GIT
 # !git add .
-# !git commit -m "more register info & added admin"
+# !git commit -m "cleanups and visuals"
 # !git push

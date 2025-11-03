@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Home — RE Marketplace{% endblock %}
+{% block head %}
+  {{ super() }}
+  <meta name="description" content="RE Marketplace connects developers and investors for secured short-term funding in the $3–30M range.">
+{% endblock %}
+{% block content %}
+  <!-- your homepage content -->
+<div class="container py-4">
+
+  <!-- Hero -->
+  <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
+    <div class="container-fluid py-5">
+      <h1 class="display-5 fw-bold">RE Marketplace</h1>
+      <p class="col-md-8 fs-5">
+        Connecting <strong>real estate developers</strong> and <strong>investors</strong> for
+        short-term, secured funding in the <strong>USD $3–30M</strong> range —
+        projects often <em>too large/complex for commercial banks</em> and
+        <em>too small for investment banks</em>.
+      </p>
+      
+            {% if current_user.is_authenticated %}
+
+            {% else %}
+                <div class="d-flex gap-2">
+                  <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Register</a>
+                  <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Log in</a>                
+                </div>
+            {% endif %}
+      
+    </div>
+  </div>
+
+  <!-- Value props -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">For Developers</h5>
+          <p class="card-text">Showcase deals, share track record, and get matched with capital that understands construction timelines, IRR targets, and security packages.</p>
+          <ul class="mb-0">
+            <li>Upload a project synopsis</li>
+            <li>Attach documents securely</li>
+            <li>Engage only with verified investors</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">For Investors</h5>
+          <p class="card-text">Discover vetted opportunities with clear risk profiles, collateral, and target returns — all in the $3–30M niche.</p>
+          <ul class="mb-0">
+            <li>Filter by IRR, risk, location</li>
+            <li>See sponsor’s equity & security</li>
+            <li>Download project attachments</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Why This Segment</h5>
+          <p class="card-text">Mid-market real estate often falls between lending rails. We streamline introductions and deal data so good projects find the right capital, fast.</p>
+          <ul class="mb-0">
+            <li>$3–30M secured, short term</li>
+            <li>Complexity-aware screening</li>
+            <li>Efficient communication</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body">
+      <h3 class="card-title mb-3">How it works</h3>
+      <div class="row">
+        <div class="col-md-6">
+          <h6 class="text-uppercase text-muted">Developers</h6>
+          <ol class="mb-3">
+            <li>Register and complete your profile (company, track record).</li>
+            <li>Upload a project synopsis and attachment(s).</li>
+            <li>Receive interest from verified investors and refine the terms.</li>
+          </ol>
+        </div>
+        <div class="col-md-6">
+          <h6 class="text-uppercase text-muted">Investors</h6>
+          <ol class="mb-3">
+            <li>Register and set your investment profile (AUM, appetite).</li>
+            <li>Search by IRR, risk, location, and security package.</li>
+            <li>Review attachments and contact sponsors for next steps.</li>
+          </ol>
+        </div>
+      </div>
+      <div>
+          <div class="d-flex justify-content-center mt-4 gap-3">            
+            {% if current_user.is_authenticated %}
+              <a href="{{ url_for('upload') }}" class="btn btn-outline-secondary ms-2">Upload a project</a>
+            {% else %}
+              <a href="{{ url_for('register') }}" class="btn btn-outline-secondary ms-2">Create an account</a>
+              <a href="{{ url_for('login') }}" class="btn btn-outline-secondary ms-2">Log in</a>
+            {% endif %}
+        </div>    
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ / Notes -->
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">What qualifies as “secured”?</h5>
+          <p class="card-text">Projects typically include collateral such as property, land, or first/second-charge security. Sponsor equity percentages and security type are visible per project.</p>
+          <h5 class="card-title mt-4">What’s the typical duration?</h5>
+          <p class="card-text">Short-term funding aligned with development or bridging phases. See each project for its expected duration and exit strategy.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Who can view projects?</h5>
+          <p class="card-text">Registered investors can browse full details and documents. Public visitors can view high-level information on the homepage.</p>
+          <h5 class="card-title mt-4">Data & privacy</h5>
+          <p class="card-text">We use role-based access and attachments are served securely. Only owners (or admins) can edit their projects.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
