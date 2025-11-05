@@ -31,7 +31,7 @@ with app.app_context():
 
 # PUSH TO GIT
 # !git add .
-# !git commit -m "minor format improvements pages"
+# !git commit -m "callback added"
 # !git push
 
 
