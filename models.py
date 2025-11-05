@@ -6,12 +6,33 @@ from flask import url_for
 
 db = SQLAlchemy()
 
+class CallbackRequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    company = db.Column(db.String(100))
+    email = db.Column(db.String(120))
+    phone = db.Column(db.String(50), nullable=False)
+    message = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, default=db.func.now())
+
+class NDARequest(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    project_id = db.Column(db.Integer, db.ForeignKey("project.id"), nullable=True)
+    company = db.Column(db.String(150), nullable=False)
+    contact_name = db.Column(db.String(100), nullable=False)
+    contact_email = db.Column(db.String(255), nullable=False)
+    message = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+
 class User(UserMixin, db.Model):  # UserMixin adds login features
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(150), nullable=False)
     role = db.Column(db.String(20), default='developer')  # 'developer' or 'investor'
     company_name = db.Column(db.String(150), nullable=True)
+    position_in_company = db.Column(db.String(50), nullable=True)
     company_website = db.Column(db.String(255), nullable=True)
     company_address = db.Column(db.String(300), nullable=True)
     phone = db.Column(db.String(30), nullable=True)
@@ -53,6 +74,7 @@ class Project(db.Model):
     brand_partnership = db.Column(db.String(100), nullable=True)
     MOIC_EM = db.Column(db.Float, nullable=True)
     sponsor_equity = db.Column(db.Float, nullable=False)
+    location_type = db.Column(db.String(50), default='prime') # e.g., 'prime', 'non-prime'
 
     
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # New: Links to user

@@ -74,6 +74,15 @@
                 {{ form.location(class="form-control") }}
               {% endif %}
             </div>
+            
+             <div class="mb-3">
+               {{ form.location_type.label(class="form-label") }}
+               {% if view_mode %}
+                 <div class="form-control-plaintext">{{ project.location_type }}</div>
+               {% else %}
+                 {{ form.location_type(class="form-control") }}
+               {% endif %}
+             </div>
 
             <div class="mb-3">
               {{ form.developer_tr.label(class="form-label") }}

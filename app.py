@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort, current_app
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from models import db, Project, User
+from flask_migrate import Migrate
+from models import db, Project, User, NDARequest, CallbackRequest
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, TextAreaField, FloatField, IntegerField, SubmitField, PasswordField, SelectField
-from wtforms.validators import DataRequired, Email, EqualTo, NumberRange, Optional, URL, Length, Regexp
+from wtforms import StringField, TextAreaField, FloatField, IntegerField, SubmitField, PasswordField, SelectField, Form, SelectMultipleField, HiddenField
+from wtforms.validators import DataRequired, Email, EqualTo, NumberRange, Optional, Length
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
@@ -61,8 +62,9 @@ class SecureModelView(ModelView):
 admin = Admin(app, name="Admin Dashboard")  # endpoint defaults to "admin", url defaults to "/admin"
 admin.add_view(SecureModelView(User, db.session))
 admin.add_view(SecureModelView(Project, db.session))
+admin.add_view(SecureModelView(NDARequest, db.session))
 
-
+migrate = Migrate(app, db)
 
 # class ReadOnlyModelView(SecureModelView):
 #     can_create = False
@@ -71,7 +73,11 @@ admin.add_view(SecureModelView(Project, db.session))
 
 # admin.add_view(ReadOnlyModelView(Project, db.session))
 
-
+class SearchForm(FlaskForm):      # <-- inherit FlaskForm
+    query = StringField("Query", validators=[Optional()])
+    countries = SelectMultipleField("Countries", validators=[Optional()], coerce=str)
+    submit = SubmitField("Search")
+    
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -94,6 +100,7 @@ class RegistrationForm(FlaskForm):
     )
 
     company_name = StringField("Company Name", validators=[Optional(), Length(max=150)])
+    position_in_company = StringField("Position in Company", validators=[Optional(), Length(max=50)])
     company_website = StringField("Company Website", validators=[Optional(), Length(max=255)])
     company_address = StringField("Company Address", validators=[Optional(), Length(max=300)])
     phone = StringField("Phone", validators=[Optional(), Length(max=30)])
@@ -118,7 +125,6 @@ class ProjectForm(FlaskForm):
     timeline = TextAreaField('Project Timeline (Optional)', validators=[Optional()])
     exit_strategy = TextAreaField('Project Exit Strategy (Optional)', validators=[Optional()])
 
-
     developer_tr = StringField('Developer Track Record (Yrs)', validators=[Optional()])
     website = StringField('Developer Website (Optional)', validators=[Optional()])
     preapproved_facility = StringField('Preapproved Facility (Optional)', validators=[Optional()])
@@ -131,12 +137,24 @@ class ProjectForm(FlaskForm):
     duration = IntegerField('Funding Duration (Months)', validators=[DataRequired()])
     irr = FloatField('Expected IRR', validators=[Optional(), NumberRange(min=0, max=100, message="Use 0–100")])
     location = StringField('Location', validators=[Optional()])
+    location_type = SelectField('Location Type', choices=['prime', 'non-prime'], default='prime', validators=[DataRequired()])
     risk_level = IntegerField('Risk Level (1-10)', validators=[DataRequired(), NumberRange(min=1, max=10)])
-    secured = SelectField('Funding Waterfall', choices=['Equity', 'Mezz','Senior','Negotiable (TBD)'], default='Mezz', validators=[DataRequired()])                                                        
+    secured = SelectField('Funding Waterfall', choices=['Equity', 'Mezz','Senior','Negotiable (TBD)'], default='Mezz', validators=[Optional()])                                                      
     attachment = FileField('Upload Attachment (PDF, XLSX, etc.)', validators=[
         FileAllowed({'pdf', 'xlsx', 'xls', 'docx', 'txt', 'png', 'jpg', 'jpeg'}, 'Invalid file type!')
     ])  # FileRequired() if mandatory
     submit = SubmitField('Upload Project')
+
+
+class NDARequestForm(FlaskForm):
+    project_id = HiddenField(validators=[Optional()])
+    company = StringField("Your Company", validators=[DataRequired(), Length(max=150)])
+    contact_name = StringField("Your Name", validators=[DataRequired(), Length(max=100)])
+    contact_email = StringField("Your Email", validators=[DataRequired(), Email(), Length(max=255)])
+    message = TextAreaField("Message (optional)", validators=[Optional(), Length(max=2000)])
+    submit = SubmitField("Submit NDA Request")
+
+
 
 # Routes
 @app.route("/")
@@ -183,6 +201,7 @@ def register():
             password_hash=generate_password_hash(form.password.data),
             role=form.role.data,
             company_name=(form.company_name.data or None),
+            position_in_company=(form.position_in_company.data or None),
             company_website=(site or None),
             company_address=(form.company_address.data or None),
             phone=(form.phone.data or None),
@@ -209,12 +228,14 @@ def register():
 
 
 
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
+        # user = User.query.filter_by(email=form.email.data).first()
+        user = User.query.filter(
+            db.func.lower(User.email) == form.email.data.lower()
+        ).first()
         if user and user.check_password(form.password.data):
             login_user(user)
             flash('Login successful!')
@@ -258,6 +279,7 @@ def upload():
             irr=form.irr.data,          # Add this
             duration=form.duration.data,
             location=form.location.data,
+            location_type=form.location_type.data,
             risk_level=form.risk_level.data,
             secured=form.secured.data,
             user_id=current_user.id
@@ -298,6 +320,7 @@ def edit_project(project_id):
         project.duration = form.duration.data
         project.irr = form.irr.data
         project.location = form.location.data
+        project.location_type = form.location_type.data
         project.risk_level = form.risk_level.data
         project.secured = form.secured.data
 
@@ -348,25 +371,154 @@ def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/search', methods=['GET', 'POST'])
+@login_required
 def search():
-    query = request.form.get('query', '') if request.method == 'POST' else ''
-    # projects = Project.query.all() if not query else Project.query.filter(
-    #     Project.title.contains(query) | Project.description.contains(query) | Project.location.contains(query)
-    # ).all()
-    query = request.form.get('query', '') if request.method == 'POST' else ''
-    projects = Project.query.all() if not query else Project.query.filter(
-        or_(
-            Project.title.ilike(f"%{query}%"),
-            Project.description.ilike(f"%{query}%"),
-            Project.location.ilike(f"%{query}%")
+    form = SearchForm()
+
+    # build choices dynamically
+    rows = db.session.query(Project.location)\
+                     .filter(Project.location.isnot(None))\
+                     .distinct().order_by(Project.location).all()
+    form.countries.choices = [(r[0], r[0]) for r in rows]
+
+    query_text = ""
+    selected_countries = []
+
+    if form.validate_on_submit():          # works now because FlaskForm
+        query_text = (form.query.data or "").strip()
+        selected_countries = form.countries.data or []
+        filters = []
+        if query_text:
+            like = f"%{query_text}%"
+            filters.append(or_(
+                Project.title.ilike(like),
+                Project.description.ilike(like),
+                Project.location.ilike(like)
+            ))
+        if selected_countries:
+            filters.append(Project.location.in_(selected_countries))
+
+        projects = Project.query.filter(*filters).order_by(Project.id.desc()).all() if filters \
+                   else Project.query.order_by(Project.id.desc()).all()
+    else:
+        # initial GET or invalid POST: keep selections if any
+        if request.method == "POST":
+            query_text = (form.query.data or "").strip()
+            selected_countries = form.countries.data or []
+        projects = Project.query.order_by(Project.id.desc()).all()
+
+    # ensure selected items stay highlighted in the multi-select
+    form.countries.data = selected_countries
+
+    return render_template("search.html", form=form, projects=projects, query=query_text)
+
+
+@app.route("/eligibility")
+def eligibility():
+    return render_template("eligibility.html")
+
+@app.route("/disclaimer")
+def disclaimer():
+    return render_template("disclaimer.html")
+
+
+@app.route("/nda/request", methods=["GET", "POST"])
+@login_required
+def nda_request():
+    form = NDARequestForm()
+
+    # Pre-fill project_id if linked from project page (?project_id=123)
+    if request.method == "GET" and "project_id" in request.args:
+        form.project_id.data = request.args.get("project_id")
+
+    # Optional: pre-fill known user info if you store it on the user profile
+    try:
+        if request.method == "GET":
+            if hasattr(current_user, "company_name") and current_user.company_name:
+                form.company.data = current_user.company_name
+            if hasattr(current_user, "first_name") and hasattr(current_user, "surname"):
+                full_name = f"{current_user.first_name or ''} {current_user.surname or ''}".strip()
+                if full_name:
+                    form.contact_name.data = full_name
+            if hasattr(current_user, "email") and current_user.email:
+                form.contact_email.data = current_user.email
+    except Exception:
+        pass  # keep it resilient even if fields don't exist
+
+    if form.validate_on_submit():
+        # --- Option A: no DB yet (simple log + flash) ---
+        # current_app.logger.info(
+        #     "NDA_REQUEST user_id=%s project_id=%s company=%s name=%s email=%s msg_len=%s",
+        #     getattr(current_user, "id", None),
+        #     form.project_id.data or "",
+        #     form.company.data,
+        #     form.contact_name.data,
+        #     form.contact_email.data,
+        #     len(form.message.data or "")
+        # )
+        # --- Option B: save to DB ---
+        req = NDARequest(
+            user_id=current_user.id,
+            project_id=int(form.project_id.data) if form.project_id.data else None,
+            company=form.company.data,
+            contact_name=form.contact_name.data,
+            contact_email=form.contact_email.data,
+            message=form.message.data or None
         )
-    ).all()
-    return render_template('search.html', projects=projects, query=query)
+        db.session.add(req)
+        db.session.commit()
+        # flash("Thanks — your NDA request has been submitted.", "success")
+
+        # If you have email integration later, trigger it here.
+        # e.g. send to admin/dev team.
+
+        flash("Thanks — your NDA request has been received. We’ll follow up shortly.", "success")
+
+        # Redirect back to project if provided, otherwise to Home
+        if form.project_id.data:
+            try:
+                return redirect(url_for("project_detail", project_id=int(form.project_id.data)))
+            except Exception:
+                pass
+        return redirect(url_for("home"))
+
+    return render_template("nda_request.html", form=form)
+
+
+@app.route("/callback", methods=["GET", "POST"])
+def request_callback():
+    from flask import request
+
+    if request.method == "POST":
+        name = request.form.get("name")
+        company = request.form.get("company")
+        phone = request.form.get("phone")
+        email = request.form.get("email")
+        message = request.form.get("message")
+
+        # Log or handle the data (later can save to DB or email)
+        # app.logger.info(f"Callback request: {name} | {company} | {email} | {phone} | {message}")
+        new_request = CallbackRequest(
+        name=name,
+        company=company,
+        email=email,
+        phone=phone,
+        message=message
+        )
+        db.session.add(new_request)
+        db.session.commit()
+
+        flash("Thank you — our team will contact you shortly.", "success")
+        return redirect(url_for("faq"))
+
+    return render_template("callback.html")
+
 
 ALLOWED_EXTENSIONS = {'pdf', 'xlsx', 'xls', 'docx', 'txt', 'png', 'jpg', 'jpeg'}
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 
 if __name__ == '__main__':
     with app.app_context():

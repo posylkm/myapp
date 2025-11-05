@@ -4,54 +4,50 @@
   <div class="card-body">
     <h2 class="card-title">Search Projects</h2>
 
-    <form method="POST" class="mb-4">
-      <div class="input-group">
-        <input type="text" name="query" class="form-control"
-               placeholder="Search by title, description, or location"
-               value="{{ query }}">
-        <button type="submit" class="btn btn-outline-secondary">Search</button>
+    <form method="POST" class="row g-2 align-items-end mb-4">
+      {{ form.hidden_tag() }}
+
+      <div class="col-md-5">
+        <label class="form-label" for="query">Search</label>
+        {{ form.query(class="form-control", id="query", placeholder="Title, description, or location", value=query) }}
+      </div>
+
+      <div class="col-md-5">
+        <label class="form-label" for="countries">Countries (Hold Ctrl/Cmd to select multiple)</label>
+        {{ form.countries(class="form-select", id="countries", multiple=True) }}
+
+      </div>
+
+      <div class="col-md-2 d-grid">
+        {{ form.submit(class="btn btn-outline-secondary") }}
       </div>
     </form>
 
     <h3>Results ({{ projects|length }} found):</h3>
-
     {% if projects %}
       <div class="list-group">
         {% for project in projects %}
-            <div class="list-group-item position-relative">
-              <h5 class="mb-1">{{ project.title }}</h5>
-            
-              <p class="mb-1 text-muted">
-                Type: {{ project.project_type }} |
-                Risk: {{ project.risk_level }}/10 |
-                Location: {{ project.location }}
-              </p>
-            
-              <p class="mb-1">
-                Budget: ${{ "%.2f"|format(project.budget) }}M |
-                Funding: ${{ "%.2f"|format(project.funding) }}M |
-                IRR: {{ "%.1f"|format(project.irr) }}% |
-                Duration: {{ project.duration if project.duration is not none else "—" }} months
-              </p>
-            
-              <p class="mb-2">
-                {{ project.description[:180] }}{% if project.description|length > 180 %}…{% endif %}
-              </p>
-            
-              <div class="d-flex gap-2">
-                <a href="{{ url_for('project_detail', project_id=project.id) }}"
-                   class="btn btn-sm btn-outline-primary">View details</a>
-            
-                {% if current_user.is_authenticated and (current_user.role == 'admin' or current_user.id == project.user_id) %}
-                  <a href="{{ url_for('edit_project', project_id=project.id) }}"
-                     class="btn btn-sm btn-outline-secondary">Edit</a>
-                {% endif %}
-              </div>
-            </div>
+          <div class="list-group-item">
+            <h5 class="mb-1">{{ project.title }}</h5>
+            <p class="mb-1">Type: {{ project.project_type }} | Risk: {{ project.risk_level }}/10</p>
+            <p class="mb-1">Budget: ${{ "%.2f"|format(project.budget) }}M |
+               Funding: ${{ "%.2f"|format(project.funding) }}M |
+               IRR: {{ "%.1f"|format(project.irr) }}% |
+               Duration: {{ project.duration }} months</p>
+            <p class="mb-1">Location: {{ project.location }}</p>
+            <p class="mb-2">Synopsis: {{ project.description[:200] }}...</p>
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('project_detail', project_id=project.id) }}">View</a>
+            {% if project.attachment_path %}
+              <a href="{{ url_for('uploaded_file', filename=project.attachment_path) }}" class="btn btn-sm btn-outline-secondary" target="_blank">Attachment</a>
+            {% endif %}
+            {% if current_user.is_authenticated and (current_user.role == 'admin' or current_user.id == project.user_id) %}
+              <a href="{{ url_for('edit_project', project_id=project.id) }}" class="btn btn-sm btn-outline-warning">Edit</a>
+            {% endif %}
+          </div>
         {% endfor %}
       </div>
     {% else %}
-      <p class="text-muted">No projects found. <a href="{{ url_for('upload') }}">Upload one?</a></p>
+      <p class="text-muted">No projects found.</p>
     {% endif %}
   </div>
 </div>

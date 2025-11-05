@@ -1,18 +1,117 @@
 {% extends "base.html" %}
+{% block title %}FAQ — RE Marketplace{% endblock %}
+
 {% block content %}
 <div class="container py-4">
   <h1 class="mb-4">Frequently Asked Questions</h1>
 
+  <!-- Registration & Roles -->
   <h5>Who can register as a developer?</h5>
-  <p>Developers with a verifiable track record in residential, commercial, or mixed-use projects.</p>
+  <p>
+    Developers with a verifiable track record in residential, commercial, or mixed-use real estate projects. 
+    Profiles should include key company details, team experience, and a summary of past projects. 
+    Developers must be corporate entities rather than individuals.
+  </p>
 
   <h5>Who can register as an investor?</h5>
-  <p>Institutional investors seeking secured, short-term real estate exposure.</p>
+  <p>
+    Institutional and professional investors, including family offices, private credit funds, and 
+    corporates seeking secured short-term real estate exposure. 
+    The platform is strictly <strong>B2B</strong> — we do not accept retail investors.
+  </p>
 
+  <h5>Is the platform regulated as a financial intermediary?</h5>
+  <p>
+    No. RE Marketplace operates as an <strong>information and introduction platform</strong>. 
+    We do not provide investment advice, arrange or broker deals, hold client money, or distribute securities. 
+    All engagement and transactions occur directly between developers and investors following bilateral agreement.
+  </p>
+
+  <!-- Project & Process -->
   <h5>What qualifies as a secured project?</h5>
-  <p>Projects with collateral such as property, land, or first/second-charge security.</p>
+  <p>
+    Projects supported by identifiable collateral such as property, land, or development assets. 
+    Security may take the form of a first or second legal charge, debenture, or corporate guarantee. 
+    The security position and sponsor equity are clearly disclosed for each listing.
+  </p>
 
-  <h5>What’s the typical duration?</h5>
-  <p>3–24 months, depending on construction and exit timing.</p>
+  <h5>What’s the typical project duration?</h5>
+  <p>
+    Most opportunities are between <strong>3 and 24 months</strong>, depending on the construction stage and expected exit timing. 
+    Developers specify an indicative IRR and exit strategy during upload.
+  </p>
+
+  <h5>Can investors contact developers directly?</h5>
+  <p>
+    Initial contact occurs through the platform. Once mutual interest is confirmed, 
+    the parties can agree to share further information via a tri-party NDA coordinated by the platform.
+  </p>
+
+  <!-- NDA & Confidentiality -->
+  <h5>What is the tri-party NDA process?</h5>
+  <p>
+    When an investor expresses interest in a project, they may request to sign a <strong>tri-party non-disclosure agreement</strong> 
+    between the <em>Developer</em>, the <em>Platform</em>, and the <em>Investor</em>. 
+    Once signed, the developer can share confidential information (financial model, QS reports, title documents, planning details) securely.
+  </p>
+
+  <h5>Does the NDA grant investment rights?</h5>
+  <p>
+    No — the NDA only governs confidentiality and information access. 
+    Any subsequent investment decision, term sheet, or legal agreement is negotiated directly between the developer and investor.
+  </p>
+
+  <!-- Platform Operations -->
+  <h5>What fees are charged?</h5>
+  <p>
+    Registration is free for both developers and investors. 
+    RE Marketplace may charge a service or facilitation fee for certain introductions or data access — these are agreed transparently and in writing before any engagement.
+  </p>
+
+  <h5>How is project information verified?</h5>
+  <p>
+    Developers are responsible for the accuracy of their submissions. 
+    RE Marketplace performs basic plausibility checks but does not conduct full due diligence or guarantee completeness.
+  </p>
+
+  <h5>How is data stored and protected?</h5>
+  <p>
+    All uploaded files are stored securely with access restricted by user role. 
+    Developers retain ownership of their materials. 
+    We comply with applicable data protection laws and do not sell or share user data with third parties.
+  </p>
+
+  <h5>Can projects be edited or removed?</h5>
+  <p>
+    Yes. Developers can edit or withdraw their own projects at any time. 
+    Admins may remove listings that breach content or eligibility standards.
+  </p>
+
+  <!-- Investor Experience -->
+  <h5>How do investors search for projects?</h5>
+  <p>
+    Investors can filter projects by location, risk level, IRR, security type, or duration. 
+    Summaries are visible to all registered investors, with additional details released once an NDA is in place.
+  </p>
+
+  <h5>Can multiple investors participate in a single project?</h5>
+  <p>
+    Potentially, yes — where a developer is open to co-funding or syndication. 
+    Such arrangements are managed outside the platform and coordinated directly between the parties.
+  </p>
+
+  <!-- Contact -->
+  <!-- <h5>How can I contact the RE Marketplace team?</h5> -->
+  <!-- <p> -->
+    <!-- You can reach us via the <a href="{{ url_for('nda_request') }}">contact form</a> or through your user dashboard once logged in. -->
+  <!-- </p> -->
+
+  <div class="mt-4 text-center">
+    <a href="{{ url_for('request_callback') }}" class="btn btn-primary btn-lg">Request a Call Back</a>
+  </div>
+
+  <div class="mt-4">
+    <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">Back to Home</a>
+  </div>
 </div>
 {% endblock %}
