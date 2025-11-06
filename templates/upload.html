@@ -165,6 +165,7 @@
 
         {% if view_mode %}
           <div class="d-flex justify-content-center gap-3 mt-4">
+                    
             {% if current_user.is_authenticated and (current_user.role == 'admin' or current_user.id == project.user_id) %}
               <a href="{{ url_for('edit_project', project_id=project.id) }}" class="btn btn-outline-secondary">
                 <i class="bi bi-pencil"></i> Edit

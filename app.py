@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort, current_app
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort, current_app, Response
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_migrate import Migrate
 from models import db, Project, User, NDARequest, CallbackRequest
@@ -9,20 +9,19 @@ from wtforms.validators import DataRequired, Email, EqualTo, NumberRange, Option
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import or_
-from flask_admin import Admin
+from sqlalchemy import or_, func, desc
+from flask_admin import Admin, AdminIndexView, expose
+from flask_admin.menu import MenuLink
 from flask_admin.contrib.sqla import ModelView
 import os
 
 
 def can_edit_project(project, user):
-    """Allow editing if user is admin or the developer who owns the project."""
     if not user.is_authenticated:
         return False
     if getattr(user, "role", None) == "admin":
         return True
     return getattr(user, "role", None) == "developer" and project.user_id == user.id
-
 
 
 app = Flask(__name__, instance_relative_config=True)
@@ -54,15 +53,40 @@ login_manager.login_message = 'Login required to access this page.'
 # Add admin and Restrict admin access
 class SecureModelView(ModelView):
     def is_accessible(self):
-        return current_user.is_authenticated and current_user.role == "admin"
+        return (current_user.is_authenticated and getattr(current_user, 'role', '') == 'admin')
+
     def inaccessible_callback(self, name, **kwargs):
-        abort(403)
+        flash("Admin area — please log in with an admin account.", "warning")
+        return redirect(url_for('login', next=request.url))
+
+
+
+# class MyAdminIndexView(AdminIndexView):
+#     @expose('/')
+#     def index(self):
+#         # When someone clicks the Admin’s index (brand or first menu item),
+#         # take them to your custom admin dashboard route
+#         return redirect(url_for('admin_dashboard'))
+
+#     def is_accessible(self):
+#         return current_user.is_authenticated and getattr(current_user, 'role', '') == 'admin'
+
+# # Create Admin with the index view *named* "Admin Dashboard"
+# admin = Admin(
+#     app,
+#     name="Admin",  # this is just the brand label
+#     index_view=MyAdminIndexView(name="Admin Dashboard")
+# )
+
+
 
 # Create exactly once:
-admin = Admin(app, name="Admin Dashboard")  # endpoint defaults to "admin", url defaults to "/admin"
+admin = Admin(app, name="")  # endpoint defaults to "admin", url defaults to "/admin"
 admin.add_view(SecureModelView(User, db.session))
 admin.add_view(SecureModelView(Project, db.session))
 admin.add_view(SecureModelView(NDARequest, db.session))
+admin.add_view(SecureModelView(CallbackRequest, db.session))
+admin.add_link(MenuLink(name='Back to Site', url='/'))
 
 migrate = Migrate(app, db)
 
@@ -72,6 +96,22 @@ migrate = Migrate(app, db)
 #     can_delete = False
 
 # admin.add_view(ReadOnlyModelView(Project, db.session))
+
+# class MyAdminIndexView(AdminIndexView):
+#     @expose("/")
+#     def index(self):
+#         return redirect(url_for("admin_dashboard"))
+
+#     def is_accessible(self):
+#         return current_user.is_authenticated and getattr(current_user, "role", "") == "admin"
+
+
+# # IMPORTANT: ensure you don't also create another Admin(...) elsewhere
+# admin = Admin(
+#     app,
+#     name="Admin",
+#     index_view=MyAdminIndexView(name="Home", endpoint="flask_admin", url="/flask-admin")
+# )
 
 class SearchForm(FlaskForm):      # <-- inherit FlaskForm
     query = StringField("Query", validators=[Optional()])
@@ -253,8 +293,8 @@ def logout():
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required
 def upload():
-    if current_user.role != 'developer':
-        flash('Only developers can upload projects!')
+    if current_user.role not in ("developer", "admin"):
+        flash("Only developers or admins can upload projects!")
         return redirect(url_for('search'))
     form = ProjectForm()
     if form.validate_on_submit():
@@ -512,6 +552,100 @@ def request_callback():
         return redirect(url_for("faq"))
 
     return render_template("callback.html")
+
+
+@app.route("/admin-dashboard")
+@login_required
+def admin_dashboard():
+    # gate: admin only
+    if getattr(current_user, "role", "") != "admin":
+        flash("Admin only.", "warning")
+        return redirect(url_for("home"))
+
+    # --- Aggregates / counts ---
+    users_count = db.session.query(func.count(User.id)).scalar()
+    projects_count = db.session.query(func.count(Project.id)).scalar()
+
+    # If CallbackRequest model exists; otherwise set to 0
+    try:
+        callbacks_count = db.session.query(func.count(CallbackRequest.id)).scalar()
+    except Exception:
+        callbacks_count = 0
+
+    # --- Recent items (top 10) ---
+    recent_users = User.query.order_by(desc(User.id)).limit(10).all()
+    recent_projects = Project.query.order_by(desc(Project.id)).limit(10).all()
+    try:
+        recent_callbacks = CallbackRequest.query.order_by(desc(CallbackRequest.timestamp)).limit(10).all()
+    except Exception:
+        recent_callbacks = []
+
+    return render_template(
+        "admin_dashboard.html",
+        users_count=users_count,
+        projects_count=projects_count,
+        callbacks_count=callbacks_count,
+        recent_users=recent_users,
+        recent_projects=recent_projects,
+        recent_callbacks=recent_callbacks,
+    )
+
+
+@app.route("/admin-dashboard/export/users.csv")
+@login_required
+def export_users_csv():
+    if getattr(current_user, "role", "") != "admin":
+        abort(403)
+    rows = User.query.order_by(User.id).all()
+    def gen():
+        yield "id,email,role,first_name,surname,company_name,phone,aum\n"
+        for u in rows:
+            yield f'{u.id},{u.email},{u.role},{u.first_name or ""},{u.surname or ""},{u.company_name or ""},{u.phone or ""},{u.aum or ""}\n'
+    return Response(gen(), mimetype="text/csv",
+                    headers={"Content-Disposition": "attachment; filename=users.csv"})
+
+@app.route("/admin-dashboard/export/projects.csv")
+@login_required
+def export_projects_csv():
+    if getattr(current_user, "role", "") != "admin":
+        abort(403)
+    rows = Project.query.order_by(Project.id).all()
+    def gen():
+        yield "id,title,project_type,location,budget,funding,irr,duration,owner_id\n"
+        for p in rows:
+            yield f'{p.id},"{p.title}",{p.project_type},{p.location},{p.budget},{p.funding},{p.irr},{p.duration},{p.user_id}\n'
+    return Response(gen(), mimetype="text/csv",
+                    headers={"Content-Disposition": "attachment; filename=projects.csv"})
+
+@app.route("/admin-dashboard/export/callbacks.csv")
+@login_required
+def export_callbacks_csv():
+    if getattr(current_user, "role", "") != "admin":
+        abort(403)
+    try:
+        rows = CallbackRequest.query.order_by(CallbackRequest.timestamp.desc()).all()
+    except Exception:
+        rows = []
+    def gen():
+        yield "id,name,company,email,phone,message,timestamp\n"
+        for c in rows:
+            msg = (c.message or "").replace('\n', ' ').replace('"','""')
+            yield f'{c.id},"{c.name or ""}","{c.company or ""}",{c.email or ""},{c.phone or ""},"{msg}",{c.timestamp}\n'
+    return Response(gen(), mimetype="text/csv",
+                    headers={"Content-Disposition": "attachment; filename=callbacks.csv"})
+
+
+@app.errorhandler(403)
+def forbidden(e):
+    flash("You don't have permission to view that page.", "warning")
+    return redirect(url_for('home'))
+
+
+@app.route("/whoami")
+def whoami():
+    if current_user.is_authenticated:
+        return f"Logged in as: {current_user.email} | role={getattr(current_user, 'role', None)}"
+    return "Not logged in"
 
 
 ALLOWED_EXTENSIONS = {'pdf', 'xlsx', 'xls', 'docx', 'txt', 'png', 'jpg', 'jpeg'}

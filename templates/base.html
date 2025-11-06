@@ -57,8 +57,14 @@
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('search') }}">Search Projects</a></li>
                     {% endif %}
                        
-                    {% if current_user.is_authenticated and current_user.role == 'developer' %}
+                    {% if current_user.is_authenticated and current_user.role == 'developer' or current_user.role == 'admin' %}
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('upload') }}">Upload Project</a></li>
+                    {% endif %}
+                    
+                    {% if current_user.is_authenticated and current_user.role == 'admin' %}
+                      <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a>
+                      </li>
                     {% endif %}
 
                 </ul>
