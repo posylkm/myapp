@@ -72,7 +72,7 @@ with app.app_context():
 
 # PUSH TO GIT
 # !git add .
-# !git commit -m "callback added"
+# !git commit -m "cleanups and admin added"
 # !git push
 
 
