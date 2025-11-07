@@ -52,7 +52,7 @@
   <p>
     When an investor expresses interest in a project, they may request to sign a <strong>tri-party non-disclosure agreement</strong> 
     between the <em>Developer</em>, the <em>Platform</em>, and the <em>Investor</em>. 
-    Once signed, the developer can share confidential information (financial model, QS reports, title documents, planning details) securely.
+    Once signed, the developer can share confidential information such as financial model, Quantity Surveyor (QS) reports, title documents and planning details securely.
   </p>
 
   <h5>Does the NDA grant investment rights?</h5>
@@ -96,7 +96,7 @@
 
   <h5>Can multiple investors participate in a single project?</h5>
   <p>
-    Potentially, yes — where a developer is open to co-funding or syndication. 
+    Potentially, yes — where a developer is open to co-investment or syndication. 
     Such arrangements are managed outside the platform and coordinated directly between the parties.
   </p>
 
@@ -106,12 +106,10 @@
     <!-- You can reach us via the <a href="{{ url_for('nda_request') }}">contact form</a> or through your user dashboard once logged in. -->
   <!-- </p> -->
 
-  <div class="mt-4 text-center">
-    <a href="{{ url_for('request_callback') }}" class="btn btn-primary btn-lg">Request a Call Back</a>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('request_callback') }}" class="btn btn-outline-secondary btn-lg px-4">Request a Call Back</a>
+    <a href="{{ url_for('home') }}" class="btn btn-outline-secondary btn-lg px-4">Back to Home</a>
   </div>
 
-  <div class="mt-4">
-    <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">Back to Home</a>
-  </div>
 </div>
 {% endblock %}

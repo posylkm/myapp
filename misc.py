@@ -62,7 +62,23 @@ with app.app_context():
         print(f"  Message: {cb.message[:80] if cb.message else ''}")
         print(f"  Timestamp: {cb.timestamp}\n")
         
-       
+        
+        
+
+
+# ✅ Steps to reactivate venv in Spyder
+
+# Open the Spyder Console
+# Run:
+# !source /Users/Michael/RE_Marketplace/venv/bin/activate
+# Check it activated:
+
+# !which python
+# It should show:
+# /Users/Michael/RE_Marketplace/venv/bin/python
+
+
+
 
 # # Every time you change models:
 # !flask db migrate -m "Add callback table to db"
@@ -72,7 +88,7 @@ with app.app_context():
 
 # PUSH TO GIT
 # !git add .
-# !git commit -m "cleanups and admin added"
+# !git commit -m "added Irina user"
 # !git push
 
 

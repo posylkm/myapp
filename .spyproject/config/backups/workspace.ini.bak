@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = 'empty-project-type'
-recent_files = ['models.py', 'app.py', 'templates/base.html', 'templates/upload.html', 'templates/search.html']
+recent_files = ['models.py', 'app.py', 'templates/base.html', 'templates/home.html', 'templates/upload.html', 'templates/search.html', 'templates/register.html', 'templates/login.html', 'templates/faq.html', 'templates/about.html', 'templates/contact.html', 'static/style.css', 'templates/nda_request.html', 'templates/callback.html', 'misc.py', 'templates/admin_dashboard.html']
 
 [main]
 version = 0.2.0
