@@ -4,7 +4,7 @@ from flask_migrate import Migrate
 from models import db, Project, User, NDARequest, CallbackRequest
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, TextAreaField, FloatField, IntegerField, SubmitField, PasswordField, SelectField, Form, SelectMultipleField, HiddenField
+from wtforms import StringField, TextAreaField, FloatField, IntegerField, SubmitField, PasswordField, SelectField, Form, SelectMultipleField, HiddenField, BooleanField
 from wtforms.validators import DataRequired, Email, EqualTo, NumberRange, Optional, Length
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -13,6 +13,7 @@ from sqlalchemy import or_, func, desc
 from flask_admin import Admin, AdminIndexView, expose
 from flask_admin.menu import MenuLink
 from flask_admin.contrib.sqla import ModelView
+from forms import ProfileForm
 import os
 
 
@@ -113,9 +114,20 @@ migrate = Migrate(app, db)
 #     index_view=MyAdminIndexView(name="Home", endpoint="flask_admin", url="/flask-admin")
 # )
 
-class SearchForm(FlaskForm):      # <-- inherit FlaskForm
+# class SearchForm(FlaskForm):      # <-- inherit FlaskForm
+#     query = StringField("Query", validators=[Optional()])
+#     countries = SelectMultipleField("Countries", validators=[Optional()], coerce=str)
+#     submit = SubmitField("Search")
+
+class SearchForm(FlaskForm):
     query = StringField("Query", validators=[Optional()])
     countries = SelectMultipleField("Countries", validators=[Optional()], coerce=str)
+    location_type = SelectField(
+        "Location Type",
+        choices=[("", "Any"), ("prime", "Prime"), ("non-prime", "Non-Prime")],
+        validators=[Optional()]
+    )
+    irr = FloatField("Minimum IRR (%)", validators=[Optional()])
     submit = SubmitField("Search")
     
 
@@ -265,6 +277,61 @@ def register():
         flash("Please correct the highlighted errors and try again.", "warning")
 
     return render_template("register.html", form=form)
+
+
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    form = ProfileForm()
+
+    if form.validate_on_submit():
+        # Simple columns
+        current_user.first_name = form.first_name.data
+        current_user.surname = form.surname.data
+        current_user.phone = form.phone.data
+        current_user.company_name = form.company_name.data
+        current_user.position_in_company = form.position_in_company.data
+        current_user.company_website = form.company_website.data
+        current_user.company_address = form.company_address.data
+        current_user.aum = form.aum.data
+
+        # Preferences in JSON
+        prefs = current_user.get_preferences()
+        prefs.update({
+            "preferred_asset_classes": form.preferred_asset_classes.data or "",
+            "location_type_preference": form.location_type_preference.data or "",
+            "target_min_irr": form.target_min_irr.data or "",
+            "ticket_min": form.ticket_min.data or "",
+            "ticket_max": form.ticket_max.data or "",
+            "email_updates": bool(form.email_updates.data),
+        })
+        current_user.set_preferences(prefs)
+
+        db.session.commit()
+        flash("Profile updated.", "success")
+        return redirect(url_for('profile'))
+
+    # Prefill on GET
+    if request.method == 'GET':
+        form.first_name.data = current_user.first_name
+        form.surname.data = current_user.surname
+        form.phone.data = current_user.phone
+        form.company_name.data = current_user.company_name
+        form.position_in_company.data = current_user.position_in_company
+        form.company_website.data = current_user.company_website
+        form.company_address.data = current_user.company_address
+        form.aum.data = current_user.aum
+
+        prefs = current_user.get_preferences()
+        form.preferred_asset_classes.data = prefs.get("preferred_asset_classes", "")
+        form.location_type_preference.data = prefs.get("location_type_preference", "")
+        form.target_min_irr.data = prefs.get("target_min_irr", "")
+        form.ticket_min.data = prefs.get("ticket_min", "")
+        form.ticket_max.data = prefs.get("ticket_max", "")
+        form.email_updates.data = bool(prefs.get("email_updates", False))
+
+    return render_template('profile.html', form=form)
 
 
 
@@ -435,6 +502,13 @@ def search():
                 Project.description.ilike(like),
                 Project.location.ilike(like)
             ))
+            
+        if form.irr.data:
+            filters.append(Project.irr >= form.irr.data)
+    
+        if form.location_type.data:
+            filters.append(Project.location_type == form.location_type.data)
+            
         if selected_countries:
             filters.append(Project.location.in_(selected_countries))
 
@@ -572,6 +646,13 @@ def admin_dashboard():
     except Exception:
         callbacks_count = 0
 
+    # If NDARequest model exists; otherwise set to 0
+    try:
+        nDAs_count = db.session.query(func.count(NDARequest.id)).scalar()
+    except Exception:
+        nDAs_count = 0
+
+
     # --- Recent items (top 10) ---
     recent_users = User.query.order_by(desc(User.id)).limit(10).all()
     recent_projects = Project.query.order_by(desc(Project.id)).limit(10).all()
@@ -579,15 +660,24 @@ def admin_dashboard():
         recent_callbacks = CallbackRequest.query.order_by(desc(CallbackRequest.timestamp)).limit(10).all()
     except Exception:
         recent_callbacks = []
+        
+    
+    try:
+        recent_NDA_Requests = NDARequest.query.order_by(desc(NDARequest.created_at)).limit(10).all()
+    except Exception:
+        recent_NDA_Requests = []
+
 
     return render_template(
         "admin_dashboard.html",
         users_count=users_count,
         projects_count=projects_count,
         callbacks_count=callbacks_count,
+        nDAs_count=nDAs_count,
         recent_users=recent_users,
         recent_projects=recent_projects,
         recent_callbacks=recent_callbacks,
+        recent_NDA_Requests=recent_NDA_Requests,
     )
 
 
@@ -633,6 +723,27 @@ def export_callbacks_csv():
             yield f'{c.id},"{c.name or ""}","{c.company or ""}",{c.email or ""},{c.phone or ""},"{msg}",{c.timestamp}\n'
     return Response(gen(), mimetype="text/csv",
                     headers={"Content-Disposition": "attachment; filename=callbacks.csv"})
+
+
+@app.route("/admin-dashboard/export/NDAs.csv")
+@login_required
+def export_NDA_csv():
+    if getattr(current_user, "role", "") != "admin":
+        abort(403)
+    try:
+        rows = NDARequest.query.order_by(NDARequest.created_at.desc()).all()
+    except Exception:
+        rows = []
+    def gen():
+        yield "id,name,company,email,phone,message,timestamp\n"
+        for c in rows:
+            msg = (c.message or "").replace('\n', ' ').replace('"','""')
+            yield f'{c.user_id},"{c.contact_name or ""}","{c.company or ""}",{c.contact_email or ""},"{msg}",{c.created_at}\n'
+    return Response(gen(), mimetype="text/csv",
+                    headers={"Content-Disposition": "attachment; filename=ndas.csv"})
+
+
+
 
 
 @app.errorhandler(403)

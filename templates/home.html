@@ -1,196 +1,134 @@
 {% extends "base.html" %}
-
 {% block title %}Home — RE Marketplace{% endblock %}
-
 {% block head %}
   {{ super() }}
-  <meta name="description" content="RE Marketplace connects real estate developers with professional investors for secured short-term funding in the USD $3–30M range. Founded by former investment bankers; B2B intermediary, NDA-enabled due diligence.">
+  <meta name="description" content="RE Marketplace connects real estate developers with professional investors for secured short-term funding in the USD $3–30M range.">
 {% endblock %}
-
 {% block content %}
-<div class="container py-4">
 
-  <!-- Hero -->
-  <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
-    <div class="container-fluid py-5">
+<!-- Hero -->
+<div class="mb-4 hero-banner"
+     style="background-image:url('{{ url_for('static', filename='img/hero.jpg') }}'); background-size:cover; background-position:center;">
+  <div class="overlay w-100">
+    <div class="container py-5 text-white">
       <h1 class="display-5 fw-bold">RE Marketplace</h1>
       <p class="col-md-10 fs-5">
-        We connect <strong>real estate developers</strong> with <strong>professional investors</strong> for
-        short-term, secured funding in the <strong>USD $3–30M</strong> range — a niche often too complex for commercial banks
-        and too small for investment banks.
+        We connect <strong>real estate developers</strong> with <strong>professional investors</strong> for secured funding in the <strong>USD $3–30M</strong> range — a niche often too complex for commercial banks and too small for investment banks or hedge funds.
       </p>
-      <p class="text-muted mb-4">
-        Founded by former investment bankers with a combined 50+ years of experience across structured funding, interest rates, credit and financial risk.
-        We act as an <strong>intermediary</strong> to streamline introductions and information flow — not as a broker or investment adviser.
-      </p>
-
+      <p class="col-md-10 fs-5">Founded by former investment bankers with 50+ years combined experience across structured funding, interest rates, credit and financial risk. We act as an intermediary to streamline introductions and information flow — not as a broker or investment adviser.</p>
 
       {% if not current_user.is_authenticated %}
         <div class="d-flex gap-2">
-          <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4">Register</a>
-          <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg px-4">Log in</a>
-          <a href="{{ url_for('request_callback') }}" class="btn btn-outline-secondary btn-lg px-4">Request a Call Back</a>
+          <a href="{{ url_for('register') }}" class="btn btn-success btn-lg px-4">Register</a>
+          <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-4">Log in</a>
+          <a href="{{ url_for('request_callback') }}" class="btn btn-outline-light btn-lg px-4">Request a Call Back</a>
         </div>
       {% else %}
-         <div class="d-flex gap-2">
-           <a href="{{ url_for('request_callback') }}" class="btn btn-outline-secondary btn-lg px-4">Request a Call Back</a>
-        </div>
+        <a href="{{ url_for('request_callback') }}" class="btn btn-outline-light btn-lg px-4">Request a Call Back</a>
       {% endif %}
     </div>
   </div>
+</div>
 
-  <!-- Value props -->
-  <div class="row g-4 mb-4">
-    <div class="col-md-4">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">For Developers</h5>
-          <p class="card-text">Showcase deals, share track record, and get matched with capital that understands construction timelines, IRR targets, and security packages.</p>
-          <ul class="mb-0">
-            <li>Upload a project synopsis</li>
-            <li>Attach documents securely</li>
-            <li>Engage only with verified investors</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">For Investors</h5>
-          <p class="card-text">Discover opportunities with clear risk profiles, collateral, and target returns — all in the $3–30M niche.</p>
-          <ul class="mb-0">
-            <li>Filter by IRR, risk, location</li>
-            <li>See sponsor’s equity & security</li>
-            <li>Download project attachments</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Why This Segment</h5>
-          <p class="card-text">Mid-market real estate often falls between lending rails. We streamline introductions and deal data so good projects find the right capital, fast.</p>
-          <ul class="mb-0">
-            <li>$3–30M secured, short term</li>
-            <li>Complexity-aware screening</li>
-            <li>Efficient communication</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+<!-- Value props -->
+<div class="row g-4 mb-4">
+  <div class="col-md-4">
+    <div class="card h-100"><div class="card-body">
+      <h5 class="card-title">For Developers</h5>
+      <p>Showcase deals and track record, and engage with institutional capital.</p>
+      <ul class="mb-0">
+        <li>Upload a project synopsis</li>
+        <li>Attach documents securely</li>
+        <li>Engage verified investors</li>
+      </ul>
+    </div></div>
   </div>
+  <div class="col-md-4">
+    <div class="card h-100"><div class="card-body">
+      <h5 class="card-title">For Investors</h5>
+      <p>Discover opportunities with clear risk profiles, collateral, and target returns.</p>
+      <ul class="mb-0">
+        <li>Filter by IRR, risk, location</li>
+        <li>See sponsor’s equity & security</li>
+        <li>Download attachments</li>
+      </ul>
+    </div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100"><div class="card-body">
+      <h5 class="card-title">Why This Segment</h5>
+      <p>Mid-market real estate often falls between lending rails. We streamline introductions and deal data so good projects find the right capital, fast.</p>
+    </div></div>
+  </div>
+</div>
 
-  <!-- How it works -->
-  <div class="card mb-4 shadow-sm">
+<!-- One “How it works” card with Our Role + two columns -->
+<section class="mb-4">
+  <div class="card">
     <div class="card-body">
-      <h3 class="card-title mb-3">How it works</h3>
+      <h3 class="card-title mb-3 text-success">How it works</h3>
+      <p class="mb-4">
+        We operate as a <strong>B2B intermediary</strong> facilitating introductions, information exchange and coordination. If required, can assist real estate developers with preparation of investor presentations, financial models and security structuring solutions.
+        We do <strong>not</strong> provide investment advice or arrange deals, and do not hold client money. Negotiations occur
+        directly <strong>between Developer and Investor</strong>.
+      </p>
       <div class="row">
-        <div class="col-md-6">
-          <h6 class="text-uppercase text-muted">Developers</h6>
-          <ol class="mb-3">
-            <li>Register and complete your profile (company, track record).</li>
+        <div class="col-md-6 mb-3">
+          <h5 class="text-uppercase text-muted">Developers</h5>
+          <ol class="ps-3">
+            <li>Register and complete your company profile.</li>
             <li>Upload a project synopsis and attachments.</li>
-            <li>Engage with verified investors who express interest.</li>
-            <li><strong>On request:</strong> countersign a tri-party NDA (Developer–Platform–Investor) to share confidential materials and models for due diligence.</li>
+            <li>Engage with verified investors.</li>
+            <li>When requested, sign a <strong>tri-party NDA</strong> to share confidential materials.</li>
           </ol>
+          {% if current_user.role in ['developer', 'admin'] %}
+          <a href="{{ url_for('upload') }}" class="btn btn-sm btn-outline-primary">Upload Project</a>
+          {% endif %}
+          
         </div>
-        <div class="col-md-6">
-          <h6 class="text-uppercase text-muted">Investors</h6>
-          <ol class="mb-3">
-            <li>Register as a professional/institutional investor and set preferences.</li>
-            <li>Filter projects by IRR, risk, location, security package, sponsor equity.</li>
-            <li>Like a deal? <strong>Request a tri-party NDA</strong> for confidential data access.</li>
-            <li>Complete diligence and proceed to bilateral term sheet/approval with the developer.</li>
+        <div class="col-md-6 mb-3">
+          <h5 class="text-uppercase text-muted">Investors</h5>
+          <ol class="ps-3">
+            <li>Register as a professional/institutional investor.</li>
+            <li>Filter projects by IRR, risk, location, security.</li>
+            <li>Review details and documents securely.</li>
+            <li>Request a <strong>tri-party NDA</strong> for diligence.</li>
           </ol>
+          {% if current_user.role in ['investor', 'admin'] %}
+          <a href="{{ url_for('nda_request') }}" class="btn btn-sm btn-outline-primary">Request NDA</a>
+          {% endif %}
         </div>
       </div>
-      <div class="d-flex justify-content-center mt-4 gap-3">
-        {% if current_user.is_authenticated %}
-          <a href="{{ url_for('upload') }}" class="btn btn-outline-secondary btn-lg px-4">Upload a project</a>
-        {% else %}
-          <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4">Create an account</a>
-          <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg px-4">Log in</a>
-          <a href="{{ url_for('faq') }}" class="btn btn-outline-secondary btn-lg px-4">Go To FAQ</a>
-        {% endif %}
-      </div>
+<!--      <div class="d-flex justify-content-center mt-3 gap-3"> -->
+         {% if current_user.is_authenticated %}
+<!--           <a href="{{ url_for('upload') }}" class="btn btn-sm btn-outline-primary">Upload a project</a> -->
+         {% else %}
+           <a href="{{ url_for('register') }}" class="btn btn-sm btn-outline-primary">Create an account</a>
+           <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-primary">Log in</a>
+         {% endif %}
+<!--       </div> -->
     </div>
   </div>
+</section> 
 
-  <!-- Our role & Eligibility -->
-  <div class="row g-4 mb-4">
-    <div class="col-md-6">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <h4 class="card-title mb-2">Our role</h4>
-          <p class="mb-2">
-            We operate as a <strong>B2B intermediary</strong> facilitating introductions, information exchange, coordination and, if required, can assist developers with preparation of investor presentation, financial model and security structuring solutions.
-          </p>
-          <p class="mb-0">
-            We do not provide investment advice, make recommendations, arrange deals in investments, or hold client money. Transactions, terms and negotiations occur <strong>directly between developer and investor</strong>.
-          </p>
-          </p>
-        </div>
-      </div>
-    </div>
 
-    <div class="col-md-6">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <h4 class="card-title mb-2">Eligibility & Regulatory</h4>
-          <p class="mb-2">
+<!-- Eligibility & Regulatory -->
+<section class="mb-4">
+  <div class="card">
+    <div class="card-body">
+      <h3 class="card-title mb-3 text-success">Eligibility & Regulatory</h3>
+      <p class="mb-4">
             Access is limited to <strong>professional/institutional investors</strong> and corporate developers.
             The platform is for <strong>business-to-business</strong> use only and is <strong>not a public solicitation</strong>.
-          </p>
-          <p class="mb-3">
-            By using the platform you confirm you meet relevant professional criteria in your jurisdiction.
-          </p>
-          <a href="{{ url_for('eligibility') }}" class="btn btn-sm btn-outline-primary">Read eligibility</a>
-          <a href="{{ url_for('disclaimer') }}" class="btn btn-sm btn-outline-secondary ms-2">Read disclaimer</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- NDA & confidential access -->
-  <div class="card mb-4 shadow-sm" id="nda-info">
-    <div class="card-body">
-      <h3 class="card-title mb-2">Confidential access via tri-party NDA</h3>
-      <p class="mb-2">
-        When an investor wishes to proceed with diligence, the platform provides a standard <strong>tri-party NDA</strong> (Developer–Platform–Investor).
-        Once executed, the developer may share confidential files (financial model, QS reports, title/charge docs, planning packs) with role-based access.
       </p>
-      <!-- <div class="d-flex justify-content-center gap-3"> -->
-        <!-- <a href="{{ url_for('nda_request') }}" class="btn btn-primary">Request NDA</a> -->
-        <!-- <a href="{{ url_for('home') ~ '#faq' }}" class="btn btn-outline-secondary">FAQ</a> -->
-      <!-- </div> -->
+      <p class="mb-4">
+            By using the platform you confirm you meet relevant professional criteria in your jurisdiction.
+      </p>
+        <a href="{{ url_for('eligibility') }}" class="btn btn-sm btn-outline-primary">Read eligibility</a>
+        <a href="{{ url_for('disclaimer') }}" class="btn btn-sm btn-outline-primary">Read disclaimer</a>
     </div>
   </div>
+</section>
 
-  <!-- FAQ / Notes -->
-  <div class="row g-4" id="faq">
-    <div class="col-md-6">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">What qualifies as “secured”?</h5>
-          <p class="card-text">Projects typically include collateral such as property, land, or first/second-charge security. Sponsor equity percentages and security type are visible per project.</p>
-          <h5 class="card-title mt-4">What’s the typical duration?</h5>
-          <p class="card-text">Short-term funding aligned with development or bridging phases. See each project for its expected duration and exit strategy.</p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card h-100 shadow-sm">
-        <div class="card-body">
-          <h5 class="card-title">Who can view projects?</h5>
-          <p class="card-text">Registered investors can browse full details and documents. Public visitors can view high-level information on the homepage.</p>
-          <h5 class="card-title mt-4">Data & privacy</h5>
-          <p class="card-text">We use role-based access and attachments are served securely. Only owners (or admins) can edit their projects.</p>
-        </div>
-      </div>
-    </div>
-  </div>
 
-</div>
 {% endblock %}

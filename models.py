@@ -1,10 +1,19 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import JSON
+from sqlalchemy.dialects.sqlite import JSON as SQLITE_JSON  # optional fallback
+from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.ext.hybrid import hybrid_property
 from flask_login import UserMixin  # For user session support
 from werkzeug.security import generate_password_hash, check_password_hash
-import os
+import os, json
 from flask import url_for
 
 db = SQLAlchemy()
+
+
+preferences_json = db.Column(db.Text, nullable=True)   # stores JSON string with preferences
+updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
+
 
 class CallbackRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -26,22 +35,25 @@ class NDARequest(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
 
-class User(UserMixin, db.Model):  # UserMixin adds login features
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(150), nullable=False)
-    role = db.Column(db.String(20), default='developer')  # 'developer' or 'investor'
-    company_name = db.Column(db.String(150), nullable=True)
-    position_in_company = db.Column(db.String(50), nullable=True)
-    company_website = db.Column(db.String(255), nullable=True)
-    company_address = db.Column(db.String(300), nullable=True)
-    phone = db.Column(db.String(30), nullable=True)
-    first_name = db.Column(db.String(100), nullable=True)
-    surname = db.Column(db.String(100), nullable=True)
-    aum = db.Column(db.Float, nullable=True)  # in millions or your preferred unit
+    role = db.Column(db.String(20), default='developer')
 
-    # Projects relationship (one user has many projects)
+    company_name = db.Column(db.String(150))
+    position_in_company = db.Column(db.String(50))
+    company_website = db.Column(db.String(255))
+    company_address = db.Column(db.String(300))
+    phone = db.Column(db.String(30))
+    first_name = db.Column(db.String(100))
+    surname = db.Column(db.String(100))
+    aum = db.Column(db.Float)
+
     projects = db.relationship('Project', backref='owner', lazy=True)
+
+    # Store all profile preferences here to avoid schema churn
+    preferences_json = db.Column(db.JSON, nullable=False, default=dict)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -49,8 +61,82 @@ class User(UserMixin, db.Model):  # UserMixin adds login features
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+    def get_preferences(self) -> dict:
+        prefs = getattr(self, "preferences_json", None)
+        if not prefs:
+            return {}
+        if isinstance(prefs, dict):
+            return prefs
+        try:
+            return json.loads(prefs) if prefs else {}
+        except Exception:
+            return {}
+
+    def set_preferences(self, prefs: dict) -> None:
+        if not isinstance(prefs, dict):
+            raise ValueError("prefs must be a dict")
+        self.preferences_json = prefs  # <- don't comment this out
+
+    # Convenience getters/setters so you can call user.pref_x like fields
+    def _pref_get(self, key, default=None):
+        return self.get_preferences().get(key, default)
+
+    def _pref_set(self, key, value):
+        prefs = self.get_preferences()
+        prefs[key] = value
+        self.set_preferences(prefs)
+
+    @hybrid_property
+    def preferred_asset_classes(self):
+        return self._pref_get("preferred_asset_classes", "")
+
+    @preferred_asset_classes.setter
+    def preferred_asset_classes(self, v):
+        self._pref_set("preferred_asset_classes", v)
+
+    @hybrid_property
+    def location_type_preference(self):
+        return self._pref_get("location_type_preference", "")
+
+    @location_type_preference.setter
+    def location_type_preference(self, v):
+        self._pref_set("location_type_preference", v)
+
+    @hybrid_property
+    def target_min_irr(self):
+        return self._pref_get("target_min_irr", "")
+
+    @target_min_irr.setter
+    def target_min_irr(self, v):
+        self._pref_set("target_min_irr", v)
+
+    @hybrid_property
+    def email_updates(self):
+        return bool(self._pref_get("email_updates", False))
+
+    @email_updates.setter
+    def email_updates(self, v):
+        self._pref_set("email_updates", bool(v))
+
+    @hybrid_property
+    def ticket_min(self):
+        return self._pref_get("ticket_min", "")
+
+    @ticket_min.setter
+    def ticket_min(self, v):
+        self._pref_set("ticket_min", v)
+
+    @hybrid_property
+    def ticket_max(self):
+        return self._pref_get("ticket_max", "")
+
+    @ticket_max.setter
+    def ticket_max(self, v):
+        self._pref_set("ticket_max", v)
+
     def __repr__(self):
         return f'<User {self.email}>'
+
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)

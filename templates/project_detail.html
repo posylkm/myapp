@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Project Details — {{ project.title }}{% endblock %}
+{% block content %}
+
+{% block styles %}
+<style>
+  .muted-inputs .form-control,
+  .muted-inputs .form-select {
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    color: #333;
+  }
+  .muted-inputs .form-control:focus,
+  .muted-inputs .form-select:focus {
+    background-color: #ffffff;
+    border-color: #777;
+    box-shadow: none;
+  }
+</style>
+{% endblock %}
+
+<div class="container py-4">
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+
+      <div class="d-flex justify-content-between align-items-start">
+        <h2 class="text-success">{{ project.title }}</h2>
+
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('request_callback') }}" class="btn btn-outline-secondary">
+            Request Call Back
+          </a>
+
+          {% if current_user.role == 'investor' %}
+            <a href="{{ url_for('nda_request', project_id=project.id) }}" class="btn btn-success">
+              Request NDA
+            </a>
+          {% endif %}
+
+          {% if current_user.role == 'admin' or current_user.id == project.user_id %}
+            <a href="{{ url_for('edit_project', project_id=project.id) }}" class="btn btn-outline-warning">
+              Edit Project
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <p class="text-muted mb-4">{{ project.location }} • {{ project.project_type }}</p>
+
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <h6 class="fw-bold">Budget</h6>
+          <p>${{ "%.2f"|format(project.budget) }}M</p>
+        </div>
+        <div class="col-md-4">
+          <h6 class="fw-bold">Funding Required</h6>
+          <p>${{ "%.2f"|format(project.funding) }}M</p>
+        </div>
+        <div class="col-md-4">
+          <h6 class="fw-bold">IRR</h6>
+          <p>{{ "%.1f"|format(project.irr) }}%</p>
+        </div>
+      </div>
+
+      <h4 class="mt-4">Synopsis</h4>
+      <p>{{ project.description }}</p>
+
+      {% if project.timeline %}
+        <h5 class="mt-4">Timeline</h5>
+        <p>{{ project.timeline }}</p>
+      {% endif %}
+
+      {% if project.exit_strategy %}
+        <h5 class="mt-4">Exit Strategy</h5>
+        <p>{{ project.exit_strategy }}</p>
+      {% endif %}
+
+      {% if project.attachment_path %}
+        <hr>
+        <a class="btn btn-outline-primary"
+           href="{{ url_for('uploaded_file', filename=project.attachment_path) }}"
+           target="_blank">📎 Download Project Attachment</a>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

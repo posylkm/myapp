@@ -1,15 +1,22 @@
 {% extends "base.html" %}
+{% block title %}About — RE Marketplace{% endblock %}
 {% block content %}
 <div class="container py-4">
-  <h1 class="mb-4">About RE Marketplace</h1>
-  <p class="lead">
-    RE Marketplace connects real estate developers and investors for short-term, secured funding in the $3–30M segment — bridging the gap between commercial and investment banks.
-  </p>
-  <p>
-    Our platform was created to make mid-market real estate finance more efficient, transparent, and accessible. We focus on developers with proven track records and investors looking for direct, collateral-backed opportunities.
-  </p>
-  <p>
-    Whether you’re a developer seeking flexible funding or an investor seeking well-structured risk-adjusted returns, RE Marketplace brings both sides together securely and efficiently.
-  </p>
+  <div class="card">
+    <div class="card-body">
+      <h1 class="card-title mb-3">About RE Marketplace</h1>
+      <p class="mb-3">
+        RE Marketplace connects real estate developers with professional investors in the secured
+        short-term funding niche (USD $3–30M). Founded by former investment bankers with 50+ years of
+        combined experience across structured funding, interest rates, credit and financial risk,
+        we operate as a <strong>B2B intermediary</strong> — not a broker or investment adviser.
+      </p>
+      <p class="mb-0">
+        Our role is to streamline introductions, information flow, and coordination (including tri-party NDAs),
+        so credible projects find the right capital more efficiently.
+      </p>
+    </div>
+  </div>
 </div>
+<a href="{{ url_for('home') }}" class="btn btn-sm btn-outline-primary">Back to Home</a>      
 {% endblock %}

@@ -63,7 +63,19 @@ with app.app_context():
         print(f"  Timestamp: {cb.timestamp}\n")
         
         
+with app.app_context():
+    ndas = NDARequest.query.order_by(NDARequest.created_at.desc()).all()
+    print(f"\n=== NDAs REQUESTS ({len(ndas)}) ===")
+
+    for cb in ndas:
+        print(f"ID: {cb.user_id}")
+        print(f"  Name: {cb.contact_name}")
+        print(f"  Company: {cb.company}")
+        print(f"  Email: {cb.contact_email}")
+        print(f"  Message: {cb.message[:80] if cb.message else ''}")
+        print(f"  Timestamp: {cb.created_at}\n")
         
+
 
 
 # ✅ Steps to reactivate venv in Spyder
@@ -81,16 +93,22 @@ with app.app_context():
 
 
 # # Every time you change models:
-# !flask db migrate -m "Add callback table to db"
+# !flask db migrate -m "Add profile to db"
 # !flask db upgrade
 
 
 
 # PUSH TO GIT
 # !git add .
-# !git commit -m "added Irina user"
+# !git commit -m "added Adam user"
 # !git push
 
+
+# Hard refresh the browser
+# Press Cmd+Shift+R (Mac) or Ctrl+F5 (Windows) to bust cached CSS.
+
+
+# !iconv -f WINDOWS-1252 -t UTF-8 templates/admin_dashboard.html > /tmp/admin_dashboard.html && mv /tmp/admin_dashboard.html templates/admin_dashboard.html
 
 
 # # Quick backup (just in case)
