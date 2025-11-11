@@ -100,7 +100,7 @@ with app.app_context():
 
 # PUSH TO GIT
 # !git add .
-# !git commit -m "added Adam user"
+# !git commit -m "major look/feel re-design"
 # !git push
 
 

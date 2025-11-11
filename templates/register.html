@@ -25,11 +25,38 @@
         <div class="mb-3">{{ form.company_address.label(class="form-label") }}{{ form.company_address(class="form-control") }}</div>
         <div class="row">
           <div class="col-md-6"><div class="mb-3">{{ form.phone.label(class="form-label") }}{{ form.phone(class="form-control") }}</div></div>
-          <div class="col-md-6"><div class="mb-3">{{ form.aum.label(class="form-label") }}{{ form.aum(class="form-control") }}</div></div>
+          
+          <div class="col-md-6">
+              <div class="mb-3" id="aum-field">
+                {{ form.aum.label(class="form-label") }}
+                {{ form.aum(class="form-control") }}
+              </div>
+         </div>
+          
+        
         </div>
         <div class="d-grid">{{ form.submit(class="btn btn-success") }}</div>
       </form>
     </div></div>
   </div>
 </div>
+
+<script>
+  function toggleAUM() {
+    const role = document.getElementById("{{ form.role.id }}").value;
+    const aumField = document.getElementById("aum-field");
+    if (role === "investor") {
+      aumField.style.display = "block";
+    } else {
+      aumField.style.display = "none";
+    }
+  }
+
+  // run once on page load
+  document.addEventListener("DOMContentLoaded", toggleAUM);
+
+  // run whenever role changes
+  document.getElementById("{{ form.role.id }}").addEventListener("change", toggleAUM);
+</script>
+
 {% endblock %}

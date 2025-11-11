@@ -109,11 +109,7 @@
             <div class="mb-3">
               {{ form.website.label(class="form-label") }}
               {% if view_mode %}
-                {% if project.website %}
-                  <a href="{{ project.website }}" target="_blank" rel="noopener">{{ project.website }}</a>
-                {% else %}
-                  <div class="form-control-plaintext">—</div>
-                {% endif %}
+                <div class="form-control-plaintext">{{ project.website or '—' }}</div>
               {% else %}
                 {{ form.website(class="form-control") }}
               {% endif %}

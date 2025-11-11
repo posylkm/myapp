@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, FloatField, BooleanField, SubmitField
-from wtforms.validators import Optional, Length
+from wtforms import StringField, FloatField, BooleanField, SubmitField, SelectField
+from wtforms.validators import Optional, Length, DataRequired
 
 class ProfileForm(FlaskForm):
     first_name = StringField("First name", validators=[Optional(), Length(max=100)])
@@ -11,6 +11,11 @@ class ProfileForm(FlaskForm):
     company_website = StringField("Company website", validators=[Optional(), Length(max=255)])
     company_address = StringField("Company address", validators=[Optional(), Length(max=300)])
     aum = FloatField("AUM", validators=[Optional()])
+    role = SelectField(
+        "Role",
+        choices=[("developer", "Developer"), ("investor", "Investor")],
+        validators=[DataRequired()],
+    )
 
     # New preferences as StringFields (as requested)
     preferred_asset_classes = StringField("Preferred Project Types", validators=[Optional(), Length(max=300)])

@@ -61,7 +61,7 @@
               </div>
             </div>
             <div class="col-md-6">
-              <div class="mb-3">
+              <div class="mb-3" id="aum-field">
                 {{ form.aum.label(class="form-label") }}
                 {{ form.aum(class="form-control") }}
               </div>
@@ -78,46 +78,49 @@
             {{ form.company_address(class="form-control") }}
           </div>
 
+    <div id="preferences-section">
           <hr>
 
           <h5 class="mb-3">Preferences</h5>
 
-          <div class="mb-3">
+          <div class="mb-3" id="prefered-field">
             {{ form.preferred_asset_classes.label(class="form-label") }}
-            {{ form.preferred_asset_classes(class="form-control", placeholder="e.g. Multifamily, Industrial") }}
+            {{ form.preferred_asset_classes(class="form-control", placeholder="e.g. Resi, Commercial, Industrial") }}
           </div>
 
-          <div class="mb-3">
+          <div class="mb-3" id="type-field">
             {{ form.location_type_preference.label(class="form-label") }}
-            {{ form.location_type_preference(class="form-control", placeholder="e.g. Urban core, Secondary markets") }}
+            {{ form.location_type_preference(class="form-control", placeholder="e.g. prime London or non-prime Germany") }}
           </div>
 
-          <div class="mb-3">
+          <div class="mb-3" id="minirr-field">
             {{ form.target_min_irr.label(class="form-label") }}
             {{ form.target_min_irr(class="form-control", placeholder="e.g. 12") }}
           </div>
 
           <div class="row">
             <div class="col-md-6">
-              <div class="mb-3">
+              <div class="mb-3" id="ticketmin-field">
                 {{ form.ticket_min.label(class="form-label") }}
                 {{ form.ticket_min(class="form-control", placeholder="Minimum ticket size") }}
               </div>
             </div>
             <div class="col-md-6">
-              <div class="mb-3">
+              <div class="mb-3" id="ticketmax-field">
                 {{ form.ticket_max.label(class="form-label") }}
                 {{ form.ticket_max(class="form-control", placeholder="Maximum ticket size") }}
               </div>
             </div>
           </div>
 
-          <div class="form-check mb-3">
+          <div class="form-check mb-3" id="email-field">
             {{ form.email_updates(class="form-check-input", id="email_updates") }}
             <label class="form-check-label" for="email_updates">
               {{ form.email_updates.label.text }}
             </label>
           </div>
+    </div>
+         
 
           <div class="d-grid">
             {{ form.submit(class="btn btn-primary") }}
@@ -128,4 +131,22 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const userRole = "{{ current_user.role }}";
+
+    const aumField = document.getElementById("aum-field");
+    const preferencesSection = document.getElementById("preferences-section");
+
+    if (userRole !== "investor") {
+        aumField.style.display = "none";
+        preferencesSection.style.display = "none";
+    } else {
+        aumField.style.display = "block";
+        preferencesSection.style.display = "block";
+    }
+});
+</script>
+
 {% endblock %}

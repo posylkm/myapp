@@ -61,26 +61,6 @@ class SecureModelView(ModelView):
         return redirect(url_for('login', next=request.url))
 
 
-
-# class MyAdminIndexView(AdminIndexView):
-#     @expose('/')
-#     def index(self):
-#         # When someone clicks the Admin’s index (brand or first menu item),
-#         # take them to your custom admin dashboard route
-#         return redirect(url_for('admin_dashboard'))
-
-#     def is_accessible(self):
-#         return current_user.is_authenticated and getattr(current_user, 'role', '') == 'admin'
-
-# # Create Admin with the index view *named* "Admin Dashboard"
-# admin = Admin(
-#     app,
-#     name="Admin",  # this is just the brand label
-#     index_view=MyAdminIndexView(name="Admin Dashboard")
-# )
-
-
-
 # Create exactly once:
 admin = Admin(app, name="")  # endpoint defaults to "admin", url defaults to "/admin"
 admin.add_view(SecureModelView(User, db.session))
@@ -90,34 +70,6 @@ admin.add_view(SecureModelView(CallbackRequest, db.session))
 admin.add_link(MenuLink(name='Back to Site', url='/'))
 
 migrate = Migrate(app, db)
-
-# class ReadOnlyModelView(SecureModelView):
-#     can_create = False
-#     can_edit = False
-#     can_delete = False
-
-# admin.add_view(ReadOnlyModelView(Project, db.session))
-
-# class MyAdminIndexView(AdminIndexView):
-#     @expose("/")
-#     def index(self):
-#         return redirect(url_for("admin_dashboard"))
-
-#     def is_accessible(self):
-#         return current_user.is_authenticated and getattr(current_user, "role", "") == "admin"
-
-
-# # IMPORTANT: ensure you don't also create another Admin(...) elsewhere
-# admin = Admin(
-#     app,
-#     name="Admin",
-#     index_view=MyAdminIndexView(name="Home", endpoint="flask_admin", url="/flask-admin")
-# )
-
-# class SearchForm(FlaskForm):      # <-- inherit FlaskForm
-#     query = StringField("Query", validators=[Optional()])
-#     countries = SelectMultipleField("Countries", validators=[Optional()], coerce=str)
-#     submit = SubmitField("Search")
 
 class SearchForm(FlaskForm):
     query = StringField("Query", validators=[Optional()])
@@ -156,10 +108,9 @@ class RegistrationForm(FlaskForm):
     company_website = StringField("Company Website", validators=[Optional(), Length(max=255)])
     company_address = StringField("Company Address", validators=[Optional(), Length(max=300)])
     phone = StringField("Phone", validators=[Optional(), Length(max=30)])
-    aum = FloatField("Assets Under Management (AUM, in millions)", validators=[Optional()])  # investors only
+    aum = FloatField("AUM (millions)", validators=[Optional()])  # investors only
 
     submit = SubmitField("Register")
-
 
 
 
@@ -456,14 +407,6 @@ def edit_project(project_id):
     return render_template("upload.html", form=form, edit_mode=True, project=project)
 
 
-
-# @app.route("/projects/<int:project_id>")
-# @login_required
-# def project_detail(project_id):
-#     project = Project.query.get_or_404(project_id)
-#     # (Optional) if you want only certain roles to view details, enforce here.
-#     return render_template("project_detail.html", project=project)
-
 @app.route("/projects/<int:project_id>")
 @login_required
 def project_detail(project_id):
@@ -560,16 +503,6 @@ def nda_request():
         pass  # keep it resilient even if fields don't exist
 
     if form.validate_on_submit():
-        # --- Option A: no DB yet (simple log + flash) ---
-        # current_app.logger.info(
-        #     "NDA_REQUEST user_id=%s project_id=%s company=%s name=%s email=%s msg_len=%s",
-        #     getattr(current_user, "id", None),
-        #     form.project_id.data or "",
-        #     form.company.data,
-        #     form.contact_name.data,
-        #     form.contact_email.data,
-        #     len(form.message.data or "")
-        # )
         # --- Option B: save to DB ---
         req = NDARequest(
             user_id=current_user.id,
@@ -581,8 +514,6 @@ def nda_request():
         )
         db.session.add(req)
         db.session.commit()
-        # flash("Thanks — your NDA request has been submitted.", "success")
-
         # If you have email integration later, trigger it here.
         # e.g. send to admin/dev team.
 
