@@ -1,6 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, FloatField, BooleanField, SubmitField, SelectField
 from wtforms.validators import Optional, Length, DataRequired
+from models import AUM_CHOICES
+
 
 class ProfileForm(FlaskForm):
     first_name = StringField("First name", validators=[Optional(), Length(max=100)])
@@ -10,12 +12,17 @@ class ProfileForm(FlaskForm):
     position_in_company = StringField("Position", validators=[Optional(), Length(max=50)])
     company_website = StringField("Company website", validators=[Optional(), Length(max=255)])
     company_address = StringField("Company address", validators=[Optional(), Length(max=300)])
-    aum = FloatField("AUM", validators=[Optional()])
+    # aum = FloatField("AUM", validators=[Optional()])
+    aum = SelectField("AUM", choices=[("", "Select AUM")] + AUM_CHOICES, validators=[Optional()])
     role = SelectField(
         "Role",
         choices=[("developer", "Developer"), ("investor", "Investor")],
         validators=[DataRequired()],
     )
+
+    track_record = StringField("Track Record", validators=[Optional(), Length(max=200)])
+    geo_focus    = StringField("Geographic Focus", validators=[Optional(), Length(max=150)])
+
 
     # New preferences as StringFields (as requested)
     preferred_asset_classes = StringField("Preferred Project Types", validators=[Optional(), Length(max=300)])

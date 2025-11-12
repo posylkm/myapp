@@ -21,21 +21,46 @@
           <div class="col-md-6"><div class="mb-3">{{ form.company_name.label(class="form-label") }}{{ form.company_name(class="form-control") }}</div></div>
           <div class="col-md-6"><div class="mb-3">{{ form.position_in_company.label(class="form-label") }}{{ form.position_in_company(class="form-control") }}</div></div>
         </div>
-        <div class="mb-3">{{ form.company_website.label(class="form-label") }}{{ form.company_website(class="form-control") }}</div>
-        <div class="mb-3">{{ form.company_address.label(class="form-label") }}{{ form.company_address(class="form-control") }}</div>
-        <div class="row">
-          <div class="col-md-6"><div class="mb-3">{{ form.phone.label(class="form-label") }}{{ form.phone(class="form-control") }}</div></div>
-          
-          <div class="col-md-6">
-              <div class="mb-3" id="aum-field">
-                {{ form.aum.label(class="form-label") }}
-                {{ form.aum(class="form-control") }}
-              </div>
-         </div>
-          
         
+ 
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              {{ form.phone.label(class="form-label") }}
+              {{ form.phone(class="form-control") }}
+            </div>
+          </div>
+        
+
+        <div class="col-md-6">
+          <div class="mb-3" id="aum-field">
+            {{ form.aum.label(class="form-label") }}
+            {{ form.aum(class="form-select") }}
+          </div>
+        </div>          
+          
         </div>
+        
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              {{ form.track_record.label(class="form-label") }}
+              {{ form.track_record(class="form-control") }}
+            </div>
+          </div>
+        
+          <div class="col-md-6">
+            <div class="mb-3">
+              {{ form.geo_focus.label(class="form-label") }}
+              {{ form.geo_focus(class="form-control") }}
+            </div>
+          </div>
+        </div>
+        
         <div class="d-grid">{{ form.submit(class="btn btn-success") }}</div>
+
+
+     
       </form>
     </div></div>
   </div>

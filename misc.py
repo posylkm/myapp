@@ -77,6 +77,15 @@ with app.app_context():
         
 
 
+from models import db, User
+dups = {}
+with app.app_context():
+    for u in User.query.all():
+        e = (u.email or "").strip().lower()
+        if u.email != e:
+            u.email = e
+    db.session.commit()
+
 
 # ✅ Steps to reactivate venv in Spyder
 
@@ -100,7 +109,7 @@ with app.app_context():
 
 # PUSH TO GIT
 # !git add .
-# !git commit -m "major look/feel re-design"
+# !git commit -m "minor changes & cleanups"
 # !git push
 
 

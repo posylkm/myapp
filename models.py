@@ -3,6 +3,7 @@ from sqlalchemy import JSON
 from sqlalchemy.dialects.sqlite import JSON as SQLITE_JSON  # optional fallback
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import validates
 from flask_login import UserMixin  # For user session support
 from werkzeug.security import generate_password_hash, check_password_hash
 import os, json
@@ -11,8 +12,8 @@ from flask import url_for
 db = SQLAlchemy()
 
 
-preferences_json = db.Column(db.Text, nullable=True)   # stores JSON string with preferences
-updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
+# preferences_json = db.Column(db.Text, nullable=True)
+# updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
 
 class CallbackRequest(db.Model):
@@ -35,11 +36,20 @@ class NDARequest(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
 
+AUM_CHOICES = [
+    ("lt50", "Below $50m"),
+    ("50-100", "$50m–$100m"),
+    ("gt100", "Above $100m"),
+]
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(150), unique=True, nullable=False)
+    email = db.Column(db.String(150), nullable=False, unique=True)
     password_hash = db.Column(db.String(150), nullable=False)
     role = db.Column(db.String(20), default='developer')
+    track_record = db.Column(db.String(200), nullable=True)   # e.g. "10 years / 12 deals"
+    geo_focus    = db.Column(db.String(150), nullable=True)   # e.g. "UK, DACH, Nordics"
+
 
     company_name = db.Column(db.String(150))
     position_in_company = db.Column(db.String(50))
@@ -48,7 +58,9 @@ class User(UserMixin, db.Model):
     phone = db.Column(db.String(30))
     first_name = db.Column(db.String(100))
     surname = db.Column(db.String(100))
-    aum = db.Column(db.Float)
+    aum = db.Column(db.String(20))  # values: 'lt50', '50-100', 'gt100'
+    # aum = db.Column(db.Float)
+    is_verified = db.Column(db.Boolean, nullable=False, default=False)
 
     projects = db.relationship('Project', backref='owner', lazy=True)
 
@@ -76,6 +88,12 @@ class User(UserMixin, db.Model):
         if not isinstance(prefs, dict):
             raise ValueError("prefs must be a dict")
         self.preferences_json = prefs  # <- don't comment this out
+
+    @validates("email")
+    def _normalize_email(self, key, value):
+        if not value:
+            return value
+        return value.strip().lower()
 
     # Convenience getters/setters so you can call user.pref_x like fields
     def _pref_get(self, key, default=None):

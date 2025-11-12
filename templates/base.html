@@ -61,12 +61,13 @@
           <li class="nav-item"><a class="nav-link" href="{{ url_for('faq') }}">FAQ</a></li>
 
           {% if current_user.is_authenticated %}
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('search') }}">Search</a></li>
+             <li class="nav-item"><a class="nav-link" href="{{ url_for('search') }}">Search</a></li>
 
 
             {% if current_user.role in ['developer','admin'] %}
               <li class="nav-item"><a class="nav-link" href="{{ url_for('upload') }}">Upload</a></li>
             {% endif %}
+                     
 
             {% if current_user.role == 'admin' %}
               <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}">Admin</a></li>
@@ -90,8 +91,14 @@
   </nav>
 
   <!-- spacer so content isn't hidden by fixed navbar -->
-  <div class="pg-nav-spacer"></div>
-
+  <div class="pg-nav-spacer"></div
+  
+{% if current_user.is_authenticated and current_user.role == 'investor' and not current_user.is_verified %}
+  <div class="alert alert-warning text-center mb-0" style="border-radius: 0;">
+    Your investor account is pending verification by an admin. Some features are temporarily disabled.
+  </div>
+{% endif %}
+  
   <div class="container my-4">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}

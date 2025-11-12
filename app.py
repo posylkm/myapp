@@ -1,11 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort, current_app, Response
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, abort, current_app, Response, request
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_migrate import Migrate
-from models import db, Project, User, NDARequest, CallbackRequest
+from models import db, Project, User, NDARequest, CallbackRequest, AUM_CHOICES
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, TextAreaField, FloatField, IntegerField, SubmitField, PasswordField, SelectField, Form, SelectMultipleField, HiddenField, BooleanField
-from wtforms.validators import DataRequired, Email, EqualTo, NumberRange, Optional, Length
+from wtforms.validators import DataRequired, Email, EqualTo, NumberRange, Optional, Length, ValidationError
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
@@ -16,6 +16,8 @@ from flask_admin.contrib.sqla import ModelView
 from forms import ProfileForm
 import os
 
+
+AUM_LABELS = dict(AUM_CHOICES)
 
 def can_edit_project(project, user):
     if not user.is_authenticated:
@@ -51,7 +53,6 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'  # Redirect to login if not auth'd
 login_manager.login_message = 'Login required to access this page.'
 
-# Add admin and Restrict admin access
 class SecureModelView(ModelView):
     def is_accessible(self):
         return (current_user.is_authenticated and getattr(current_user, 'role', '') == 'admin')
@@ -60,11 +61,20 @@ class SecureModelView(ModelView):
         flash("Admin area — please log in with an admin account.", "warning")
         return redirect(url_for('login', next=request.url))
 
+class UserAdmin(SecureModelView):
+    form_columns = ['email','role','first_name','surname','company_name','position_in_company',
+                    'company_website','company_address','phone','aum','is_verified','track_record','geo_focus']
 
-# Create exactly once:
-admin = Admin(app, name="")  # endpoint defaults to "admin", url defaults to "/admin"
-admin.add_view(SecureModelView(User, db.session))
-admin.add_view(SecureModelView(Project, db.session))
+class ProjectAdmin(SecureModelView):
+    form_columns = ['title','description','timeline','exit_strategy','project_type','budget','funding',
+                    'duration','irr','location','location_type','risk_level','secured','developer_tr',
+                    'website','preapproved_facility','brand_partnership','MOIC_EM','sponsor_equity',
+                    'attachment_path','user_id']
+
+# register these:
+admin = Admin(app, name="")
+admin.add_view(UserAdmin(User, db.session))
+admin.add_view(ProjectAdmin(Project, db.session))
 admin.add_view(SecureModelView(NDARequest, db.session))
 admin.add_view(SecureModelView(CallbackRequest, db.session))
 admin.add_link(MenuLink(name='Back to Site', url='/'))
@@ -94,6 +104,11 @@ class RegistrationForm(FlaskForm):
     surname = StringField("Surname", validators=[Optional(), Length(max=100)])
 
     email = StringField("Email", validators=[DataRequired(), Email()])
+    def validate_email(self, field):
+        norm = (field.data or "").strip().lower()
+        if User.query.filter(db.func.lower(User.email) == norm).first():
+            raise ValidationError("This email is already registered.")
+
     password = PasswordField("Password", validators=[DataRequired(), Length(min=8)])
     confirm_password = PasswordField("Confirm Password", validators=[DataRequired(), EqualTo("password")])
 
@@ -108,7 +123,10 @@ class RegistrationForm(FlaskForm):
     company_website = StringField("Company Website", validators=[Optional(), Length(max=255)])
     company_address = StringField("Company Address", validators=[Optional(), Length(max=300)])
     phone = StringField("Phone", validators=[Optional(), Length(max=30)])
-    aum = FloatField("AUM (millions)", validators=[Optional()])  # investors only
+    aum = SelectField("AUM", choices=[("", "Select AUM")] + AUM_CHOICES, validators=[Optional()])
+    # aum = FloatField("AUM (millions)", validators=[Optional()])  # investors only
+    track_record = StringField("Track Record (Years of Experience)", validators=[Optional(), Length(max=255)])
+    geo_focus = StringField("Geographical Focus", validators=[Optional(), Length(max=255)])
 
     submit = SubmitField("Register")
 
@@ -158,6 +176,22 @@ class NDARequestForm(FlaskForm):
     submit = SubmitField("Submit NDA Request")
 
 
+@app.before_request
+def gate_unverified_investors():
+    if (current_user.is_authenticated
+        and getattr(current_user, "role", "") == "investor"
+        and not getattr(current_user, "is_verified", False)):
+        allowed_endpoints = {
+            'home', 'about', 'contact', 'faq', 'disclaimer', 'eligibility',
+            'login', 'logout', 'whoami', 'profile', 'static'
+        }
+        ep = (request.endpoint or "")
+        if ep and (ep in allowed_endpoints or ep.startswith('static')):
+            return
+        flash("Your investor account is pending verification by an admin.", "warning")
+        return redirect(url_for('home'))
+
+
 
 # Routes
 @app.route("/")
@@ -197,6 +231,18 @@ def register():
         if site and not site.startswith(("http://", "https://")):
             site = "https://" + site
 
+        clean_email = (form.email.data or "").strip().lower()
+        
+        existing = User.query.filter(db.func.lower(User.email) == clean_email).first()
+        if existing:
+            flash("This email is already registered.", "danger")
+            return render_template("register.html", form=form)
+        
+        
+        if form.role.data == "investor" and not form.aum.data:
+            flash("Please select AUM for investors.", "warning")
+            return render_template("register.html", form=form)
+
         user = User(
             first_name=(form.first_name.data or None),
             surname=(form.surname.data or None),
@@ -208,7 +254,8 @@ def register():
             company_website=(site or None),
             company_address=(form.company_address.data or None),
             phone=(form.phone.data or None),
-            aum=(form.aum.data if form.aum.data is not None else None),
+            # aum=(form.aum.data if form.aum.data is not None else None),
+            aum=(form.aum.data or None),   # store 'lt50' / '50-100' / 'gt100' or None,
         )
 
         try:
@@ -245,7 +292,11 @@ def profile():
         current_user.position_in_company = form.position_in_company.data
         current_user.company_website = form.company_website.data
         current_user.company_address = form.company_address.data
-        current_user.aum = form.aum.data
+        # current_user.aum = form.aum.data
+        current_user.aum = form.aum.data or None
+        
+        current_user.track_record = form.track_record.data
+        current_user.geo_focus    = form.geo_focus.data
 
         # Preferences in JSON
         prefs = current_user.get_preferences()
@@ -273,6 +324,9 @@ def profile():
         form.company_website.data = current_user.company_website
         form.company_address.data = current_user.company_address
         form.aum.data = current_user.aum
+        
+        form.track_record.data = current_user.track_record
+        form.geo_focus.data    = current_user.geo_focus
 
         prefs = current_user.get_preferences()
         form.preferred_asset_classes.data = prefs.get("preferred_asset_classes", "")
@@ -425,18 +479,31 @@ def uploaded_file(filename):
 def search():
     form = SearchForm()
 
-    # build choices dynamically
-    rows = db.session.query(Project.location)\
-                     .filter(Project.location.isnot(None))\
-                     .distinct().order_by(Project.location).all()
+    # ---- 1) Role-aware base query -----------------------------------------
+    # Developers: only their projects; everyone else: all projects
+    base_query = Project.query
+    if getattr(current_user, "role", None) == "developer":
+        base_query = base_query.filter(Project.user_id == current_user.id)
+
+    # ---- 2) Build choices from the same base_query -------------------------
+    rows = (
+        db.session.query(Project.location)
+        .select_from(base_query.subquery())   # ensure we use the role-filtered set
+        .filter(Project.location.isnot(None))
+        .distinct()
+        .order_by(Project.location)
+        .all()
+    )
     form.countries.choices = [(r[0], r[0]) for r in rows]
 
     query_text = ""
     selected_countries = []
 
-    if form.validate_on_submit():          # works now because FlaskForm
+    # ---- 3) Apply user filters on top of base_query ------------------------
+    if form.validate_on_submit():
         query_text = (form.query.data or "").strip()
         selected_countries = form.countries.data or []
+
         filters = []
         if query_text:
             like = f"%{query_text}%"
@@ -445,26 +512,29 @@ def search():
                 Project.description.ilike(like),
                 Project.location.ilike(like)
             ))
-            
+
         if form.irr.data:
             filters.append(Project.irr >= form.irr.data)
-    
+
         if form.location_type.data:
-            filters.append(Project.location_type == form.location_type.data)
-            
+            # ignore "Any" blank option
+            if form.location_type.data.strip():
+                filters.append(Project.location_type == form.location_type.data)
+
         if selected_countries:
             filters.append(Project.location.in_(selected_countries))
 
-        projects = Project.query.filter(*filters).order_by(Project.id.desc()).all() if filters \
-                   else Project.query.order_by(Project.id.desc()).all()
+        query = base_query.filter(*filters) if filters else base_query
+        projects = query.order_by(Project.id.desc()).all()
     else:
         # initial GET or invalid POST: keep selections if any
         if request.method == "POST":
             query_text = (form.query.data or "").strip()
             selected_countries = form.countries.data or []
-        projects = Project.query.order_by(Project.id.desc()).all()
 
-    # ensure selected items stay highlighted in the multi-select
+        projects = base_query.order_by(Project.id.desc()).all()
+
+    # keep multi-select highlighted
     form.countries.data = selected_countries
 
     return render_template("search.html", form=form, projects=projects, query=query_text)
@@ -621,7 +691,10 @@ def export_users_csv():
     def gen():
         yield "id,email,role,first_name,surname,company_name,phone,aum\n"
         for u in rows:
-            yield f'{u.id},{u.email},{u.role},{u.first_name or ""},{u.surname or ""},{u.company_name or ""},{u.phone or ""},{u.aum or ""}\n'
+            # yield f'{u.id},{u.email},{u.role},{u.first_name or ""},{u.surname or ""},{u.company_name or ""},{u.phone or ""},{u.aum or ""}\n'
+            label = AUM_LABELS.get(u.aum or "", "")
+            yield f'{u.id},{u.email},{u.role},{u.first_name or ""},{u.surname or ""},{u.company_name or ""},{u.phone or ""},{label}\n'
+
     return Response(gen(), mimetype="text/csv",
                     headers={"Content-Disposition": "attachment; filename=users.csv"})
 

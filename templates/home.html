@@ -92,7 +92,7 @@
             <li>Register as a professional/institutional investor.</li>
             <li>Filter projects by IRR, risk, location, security.</li>
             <li>Review details and documents securely.</li>
-            <li>Request a <strong>tri-party NDA</strong> for diligence.</li>
+            <li>Request a <strong>tri-party NDA</strong> for due diligence.</li>
           </ol>
           {% if current_user.role in ['investor', 'admin'] %}
           <a href="{{ url_for('nda_request') }}" class="btn btn-sm btn-outline-primary">Request NDA</a>
