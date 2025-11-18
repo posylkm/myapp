@@ -95,7 +95,8 @@ class SearchForm(FlaskForm):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
+
 
 # Forms
 class RegistrationForm(FlaskForm):
@@ -487,15 +488,15 @@ def search():
 
     # ---- 2) Build choices from the same base_query -------------------------
     rows = (
-        db.session.query(Project.location)
-        .select_from(base_query.subquery())   # ensure we use the role-filtered set
+        base_query
+        .with_entities(Project.location)
         .filter(Project.location.isnot(None))
         .distinct()
         .order_by(Project.location)
         .all()
     )
     form.countries.choices = [(r[0], r[0]) for r in rows]
-
+    
     query_text = ""
     selected_countries = []
 

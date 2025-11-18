@@ -45,7 +45,12 @@
   <nav class="navbar navbar-expand-lg navbar-light fixed-top pg-navbar">
     <div class="container">
       <!-- Brand -->
-      <a class="navbar-brand pg-brand" href="{{ url_for('home') }}">RE Marketplace</a>
+      <!-- <a class="navbar-brand pg-brand" href="{{ url_for('home') }}">RE Marketplace</a> -->
+
+        <a class="navbar-brand pg-brand d-flex align-items-center gap-2" href="{{ url_for('home') }}">
+          <img src="{{ url_for('static', filename='img/logo.jpg') }}" alt="RE Marketplace Logo" height="28">
+          <span>RE Marketplace</span>
+        </a>
 
       <!-- Toggler -->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#pgNav"

@@ -33,6 +33,24 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Global soft light-blue background */
+/*
+body {
+  background: #eaf2ff !important;   
+}
+*/
+
+/* Global subtle premium gradient background */
+body {
+  background: linear-gradient(
+      to bottom,
+      #e8f0ff 0%,
+      #eef3ff 75%,
+      #f3f5f8 100%
+  ) !important;  
+}
+
+
 /* Links */
 a { text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -42,18 +60,37 @@ a:hover { text-decoration: underline; }
    <nav class="navbar navbar-expand-lg navbar-light fixed-top pg-navbar"> ... </nav>
    <div class="pg-nav-spacer"></div>  (just under nav to offset fixed height)
 */
+/*
 .pg-navbar {
   background: transparent;
   transition: background-color .25s ease, box-shadow .25s ease, padding .25s ease;
   padding: .35rem 0;
   z-index: 1030;
 }
+*/
+
+.pg-navbar {
+  background: rgba(235, 243, 255, 0.90) !important;   /* harmonized with gradient top */
+  backdrop-filter: blur(6px);
+  transition: background-color .25s ease, box-shadow .25s ease, padding .25s ease;
+  padding: .35rem 0;
+  z-index: 1030;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
 
 /* Solid + shadow after scroll */
+/*
 .pg-navbar.scrolled {
   background: rgba(255,255,255,.95);
   box-shadow: 0 6px 18px rgba(0,0,0,.06);
   backdrop-filter: blur(6px);
+}
+*/
+
+.pg-navbar.scrolled {
+  background: rgba(225, 235, 250, 0.95) !important;   /* slightly darker for scroll */
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
 }
 
 /* Spacer so content isn't hidden under fixed nav */
