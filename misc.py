@@ -109,7 +109,7 @@ with app.app_context():
 
 # PUSH TO GIT
 # !git add .
-# !git commit -m "minor feel and look and cleanups"
+# !git commit -m "minor cleanups"
 # !git push
 
 

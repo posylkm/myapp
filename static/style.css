@@ -1,8 +1,8 @@
 /* =========================================================
-   RE Marketplace â€” Unified Styles (Bootstrap 5 friendly)
+   RE Marketplace — Unified Styles (Bootstrap 5 friendly)
    ---------------------------------------------------------
    - Compact Promeritum-style navbar (dark links before scroll)
-   - Fixed hero background with overlay
+   - Homepage skyline background with overlay
    - Consistent cards, forms, buttons, tables
    - Select2 alignment
    ========================================================= */
@@ -25,6 +25,7 @@
 html, body {
   height: 100%;
 }
+
 body {
   background-color: var(--bg);
   color: var(--text);
@@ -33,44 +34,22 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Global soft light-blue background */
-/*
-body {
-  background: #eaf2ff !important;   
-}
-*/
-
-/* Global subtle premium gradient background */
-body {
+/* Gradient for all non-home pages */
+body:not(.home-page) {
   background: linear-gradient(
-      to bottom,
-      #e8f0ff 0%,
-      #eef3ff 75%,
-      #f3f5f8 100%
-  ) !important;  
+    to bottom,
+    #e8f0ff 0%,
+    #f3f5f8 100%
+  );
 }
-
 
 /* Links */
 a { text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-/* ---------- Promeritum-style compact navbar ---------- */
-/* Markup expected in base.html:
-   <nav class="navbar navbar-expand-lg navbar-light fixed-top pg-navbar"> ... </nav>
-   <div class="pg-nav-spacer"></div>  (just under nav to offset fixed height)
-*/
-/*
+/* ---------- Navbar ---------- */
 .pg-navbar {
-  background: transparent;
-  transition: background-color .25s ease, box-shadow .25s ease, padding .25s ease;
-  padding: .35rem 0;
-  z-index: 1030;
-}
-*/
-
-.pg-navbar {
-  background: rgba(235, 243, 255, 0.90) !important;   /* harmonized with gradient top */
+  background: rgba(235, 243, 255, 0.90) !important;
   backdrop-filter: blur(6px);
   transition: background-color .25s ease, box-shadow .25s ease, padding .25s ease;
   padding: .35rem 0;
@@ -78,29 +57,20 @@ a:hover { text-decoration: underline; }
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
-/* Solid + shadow after scroll */
-/*
 .pg-navbar.scrolled {
-  background: rgba(255,255,255,.95);
-  box-shadow: 0 6px 18px rgba(0,0,0,.06);
-  backdrop-filter: blur(6px);
-}
-*/
-
-.pg-navbar.scrolled {
-  background: rgba(225, 235, 250, 0.95) !important;   /* slightly darker for scroll */
+  background: rgba(225, 235, 250, 0.95) !important;
   backdrop-filter: blur(8px);
   box-shadow: 0 6px 18px rgba(0,0,0,.08);
 }
 
 /* Spacer so content isn't hidden under fixed nav */
 .pg-nav-spacer {
-  height: 56px; /* tweak if your nav height changes */
+  height: 56px;
 }
 
 /* Brand */
 .pg-brand {
-  color: #1b1f24 !important;   /* visible over bright hero */
+  color: #1b1f24 !important;
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: .2px;
@@ -110,7 +80,7 @@ a:hover { text-decoration: underline; }
 .pg-menu .nav-link {
   font-size: .85rem;
   padding: .35rem .55rem !important;
-  color: #1b1f24 !important;    /* visible pre-scroll */
+  color: #1b1f24 !important;
   opacity: .95;
   position: relative;
   transition: color .2s ease, opacity .2s ease;
@@ -152,63 +122,57 @@ a:hover { text-decoration: underline; }
   background: var(--brand-600);
 }
 
-/* Navbar toggler (hamburger) visible on bright hero) */
+/* Navbar toggler (hamburger) */
 .navbar-toggler {
   padding: .2rem .4rem !important;
 }
 .navbar-light .navbar-toggler-icon {
-  /* dark bars for visibility */
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(27,31,36, 0.85)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
-  width: 1rem; height: 1rem;
+  width: 1rem;
+  height: 1rem;
 }
 
 /* Optional divider between menu groups */
 .pg-divider {
   display: inline-block;
-  width: 1px; height: 18px;
+  width: 1px;
+  height: 18px;
   background: rgba(0,0,0,.12);
 }
 
-/* ---------- Hero banner (fixed background) ---------- */
-/* Markup example:
-   <div class="mb-4 hero-banner" style="background-image:url('...')"> ... </div>
-*/
+/* ---------- Hero banner ---------- */
 .hero-banner {
-  border-radius: 12px;
-  overflow: hidden;
-  min-height: 70vh;
-  background-size: cover;
-  background-position: center center;
-  background-attachment: fixed; /* keeps image static during scroll */
-  position: relative;
+  border-radius: 0;
+  overflow: visible;
 }
+
+
 .hero-banner .overlay {
-  background: rgba(0, 0, 0, .45);
   min-height: 70vh;
   display: flex;
   align-items: center;
+  background: transparent;
 }
 
-/* iOS Safari fallback: fixed attachment can be buggy */
-@supports (-webkit-touch-callout: none) {
-  .hero-banner {
-    background-attachment: scroll;
-  }
-}
 
 /* ---------- Cards ---------- */
 .card {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(233, 236, 239, 0.9);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
+
 .card-title { font-weight: 600; }
 
 /* ---------- Forms ---------- */
 .form-label { font-weight: 600; }
-.form-control, .form-select { border-radius: 10px; }
-.form-control:focus, .form-select:focus {
+.form-control,
+.form-select {
+  border-radius: 10px;
+}
+.form-control:focus,
+.form-select:focus {
   border-color: var(--brand);
   box-shadow: 0 0 0 .2rem rgba(25,135,84,.15);
 }
@@ -223,26 +187,32 @@ a:hover { text-decoration: underline; }
 
 /* ---------- Buttons ---------- */
 .btn { border-radius: 10px; }
-.btn-primary, .btn-success {
+.btn-primary,
+.btn-success {
   background: var(--brand);
   border-color: var(--brand);
 }
-.btn-primary:hover, .btn-success:hover {
+.btn-primary:hover,
+.btn-success:hover {
   background: var(--brand-600);
   border-color: var(--brand-600);
 }
 .btn-outline-secondary {
-  border-color: #ced4da; color: #212529;
+  border-color: #ced4da;
+  color: #212529;
 }
 .btn-outline-secondary:hover {
-  background: #f1f3f5; color: #212529;
+  background: #f1f3f5;
+  color: #212529;
 }
 
 /* Keep small spacing between inline buttons (e.g., in search list) */
 .list-group-item .btn { margin-right: .5rem; }
 
 /* ---------- Tables ---------- */
-.table th { background-color: #f1f3f5; }
+.table th {
+  background-color: #f1f3f5;
+}
 
 /* ---------- Filters / search UI ---------- */
 .filter-box {
@@ -252,7 +222,7 @@ a:hover { text-decoration: underline; }
   padding: .75rem;
 }
 
-/* ---------- Select2 alignment (if used) ---------- */
+/* ---------- Select2 alignment ---------- */
 .select2-container { width: 100% !important; }
 .select2-container .select2-selection--single,
 .select2-container .select2-selection--multiple {
@@ -263,10 +233,14 @@ a:hover { text-decoration: underline; }
   align-items: center;
   padding: .125rem .375rem;
 }
-.select2-container--default .select2-selection--single .select2-selection__rendered {
+.select2-container--default
+  .select2-selection--single
+  .select2-selection__rendered {
   line-height: 1.5;
 }
-.select2-container--default .select2-selection--single .select2-selection__arrow {
+.select2-container--default
+  .select2-selection--single
+  .select2-selection__arrow {
   height: 100%;
 }
 
@@ -274,9 +248,53 @@ a:hover { text-decoration: underline; }
 .text-muted-70 { color: rgba(0,0,0,.7); }
 .rounded-xl { border-radius: 1rem !important; }
 
-/* ---------- Print helper (for detail page) ---------- */
+/* ---------- Print helper ---------- */
 @media print {
-  .pg-navbar, .pg-nav-spacer, .btn, .alert, .navbar { display: none !important; }
+  .pg-navbar,
+  .pg-nav-spacer,
+  .btn,
+  .alert,
+  .navbar { display: none !important; }
   .card { box-shadow: none !important; border: none !important; }
   body { background: #fff !important; }
+}
+
+/* ---------- Homepage-only skyline background ---------- */
+body.home-page {
+  background-image: url("/static/img/skyline.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* Dark overlay for readability — single, uniform overlay */
+body.home-page::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* iOS fallback */
+@supports (-webkit-touch-callout: none) {
+  body.home-page {
+    background-attachment: scroll;
+  }
+}
+
+/* Make footer readable on homepage */
+body.home-page footer {
+  background: rgba(0, 0, 0, 0.55);
+  color: #eee !important;
+  border-top: none !important;
+}
+
+body.home-page footer a {
+  color: #cfe8ff !important;
+  text-decoration: underline;
 }
